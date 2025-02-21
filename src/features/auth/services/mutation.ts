@@ -6,6 +6,7 @@ export const LOGIN_MUTATION = gql`
       user {
         id
         email
+        username
         fullname
         birthDate
         image
@@ -25,6 +26,7 @@ export const REGISTER_MUTATION = gql`
         id
         email
         fullname
+        username
         birthDate
         image
         createdAt

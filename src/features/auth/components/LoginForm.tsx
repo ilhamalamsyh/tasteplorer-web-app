@@ -14,7 +14,7 @@ import Snackbar from '@/core/components/snackbar/Snackbar';
 
 // Define the type for the form values
 interface FormValues {
-  email: string;
+  username: string;
   password: string;
 }
 
@@ -34,7 +34,7 @@ const LoginForm = () => {
     try {
       const { data } = await loginMutation({
         variables: {
-          input: { email: values.email, password: values.password },
+          input: { username: values.username, password: values.password },
         },
       });
 
@@ -58,16 +58,17 @@ const LoginForm = () => {
   return (
     <Formik<FormValues>
       initialValues={{
-        email: '',
+        username: '',
         password: '',
       }}
       validationSchema={Yup.object({
-        email: Yup.string()
-          .email('Invalid email address')
-          .required('Email is required'),
+        username: Yup.string()
+          .trim()
+          .required('Username is required or cannot contain whitespace only'),
         password: Yup.string()
+          .trim()
           .min(6, 'Password must be at least 6 characters')
-          .required('Password is required'),
+          .required('Password is required or cannot contain whitespace only'),
       })}
       onSubmit={handleLogin}
     >
@@ -82,11 +83,11 @@ const LoginForm = () => {
             </h2>
             <form onSubmit={formik.handleSubmit}>
               <TextField
-                name="email"
-                type="email"
+                name="username"
+                type="username"
                 formik={formik}
-                placeholder="Enter your email"
-                label="Email"
+                placeholder="Enter your username"
+                label="Username"
               />
 
               <TextField
