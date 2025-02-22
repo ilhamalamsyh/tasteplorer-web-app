@@ -26,8 +26,6 @@ const SelectOptionField: React.FC<SelectOptionFieldProps> = ({
   const [searchTerm, setSearchTerm] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  console.log('field: ', field);
-
   const getSelectedOptions = (): Option[] => {
     if (isMultiple) {
       return options.filter(

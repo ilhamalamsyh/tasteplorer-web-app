@@ -14,11 +14,13 @@ import { useAuth } from '@/context/AuthContext';
 import { useMutation } from '@apollo/client';
 import { REGISTER_MUTATION } from '../services/mutation';
 import Snackbar from '@/core/components/snackbar/Snackbar';
+import { convertDateToFormattedDate } from '@/utils/date_time_format';
 
 // Define the type for the form values
 interface FormValues {
   fullname: string;
   email: string;
+  username: string;
   password: string;
   birthdate: Date | null;
   allowFutureDates: boolean; // Default: No future dates allowed
@@ -39,13 +41,19 @@ const RegisterForm = () => {
     actions: FormikHelpers<FormValues>
   ) => {
     try {
+      const formattedDate = convertDateToFormattedDate(
+        values.birthdate,
+        'YYYY-MM-DD'
+      );
+
       const { data } = await registerMutation({
         variables: {
           input: {
             fullname: values.fullname,
             email: values.email,
+            username: values.username,
             password: values.password,
-            birthDate: values.birthdate,
+            birthDate: formattedDate,
           },
         },
       });
@@ -72,6 +80,7 @@ const RegisterForm = () => {
       initialValues={{
         fullname: '',
         email: '',
+        username: '',
         password: '',
         birthdate: null,
         allowFutureDates: false, // Default: No future dates allowed
@@ -81,8 +90,12 @@ const RegisterForm = () => {
         email: Yup.string()
           .email('Invalid email address')
           .required('Email is required'),
+        username: Yup.string()
+          .trim()
+          .min(8, 'Username must be at least 8 characters')
+          .required('Username is required'),
         password: Yup.string()
-          .min(6, 'Password must be at least 6 characters')
+          .min(10, 'Password must be at least 10 characters')
           .required('Password is required'),
         birthdate: Yup.date()
           .required('Birth date is required')
@@ -121,6 +134,13 @@ const RegisterForm = () => {
                   formik={formik}
                   placeholder="Enter your email"
                   label="Email"
+                />
+                <TextField
+                  name="username"
+                  type="text"
+                  formik={formik}
+                  placeholder="Enter your username"
+                  label="Username"
                 />
                 <TextField
                   name="password"
