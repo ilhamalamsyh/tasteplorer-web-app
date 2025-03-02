@@ -5,102 +5,36 @@
 'use client'; // Add this line
 
 import React, { useState, useEffect } from 'react';
-import { Formik, FormikHelpers } from 'formik';
-import * as Yup from 'yup';
 import TextField from '@/core/components/field/TextField';
 import { DatePicker } from '@/core/components/datepicker/DatePicker';
 import { format } from 'date-fns';
-import { useAuth } from '@/context/AuthContext';
-import { useMutation } from '@apollo/client';
-import { REGISTER_MUTATION } from '../services/mutation';
 import Snackbar from '@/core/components/snackbar/Snackbar';
-import { convertDateToFormattedDate } from '@/utils/date_time_format';
+import {
+  RegisterFormValues,
+  registerInitialValues,
+  registerValidationSchema,
+} from '../data/authSchema';
+import { useHandleRegister } from '../services/authService';
+import useTogglePassword from '@/core/hooks/useTogglePassword';
+import FormikWrapper from '@/core/components/form/FormikWrapper';
+import useDatePicker from '@/core/hooks/useDatePicker';
 
 // Define the type for the form values
-interface FormValues {
-  fullname: string;
-  email: string;
-  username: string;
-  password: string;
-  birthdate: Date | null;
-  allowFutureDates: boolean; // Default: No future dates allowed
-}
 
 const RegisterForm = () => {
-  const { register } = useAuth();
-  const [registerMutation, { loading }] = useMutation<{
-    register: { user: any; token: string };
-  }>(REGISTER_MUTATION);
-
   const [error, setError] = useState<string>('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [showDatePicker, setShowDatePicker] = useState(false);
-
-  const handleRegister = async (
-    values: FormValues,
-    actions: FormikHelpers<FormValues>
-  ) => {
-    try {
-      const formattedDate = convertDateToFormattedDate(
-        values.birthdate,
-        'YYYY-MM-DD'
-      );
-
-      const { data } = await registerMutation({
-        variables: {
-          input: {
-            fullname: values.fullname,
-            email: values.email,
-            username: values.username,
-            password: values.password,
-            birthDate: formattedDate,
-          },
-        },
-      });
-
-      if (data) {
-        register(data.register.user, data.register.token);
-        actions.resetForm();
-      }
-    } catch (error: any) {
-      setError(error.message || 'Something went wrong.');
-    }
-  };
+  const { handleRegister, loading } = useHandleRegister(setError);
+  const { showPassword, togglePasswordVisibility } = useTogglePassword();
+  const { showDatePicker, openDatePicker, closeDatePicker } = useDatePicker();
 
   const handleCloseSnackbar = () => {
     setError('');
   };
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
-
   return (
-    <Formik<FormValues>
-      initialValues={{
-        fullname: '',
-        email: '',
-        username: '',
-        password: '',
-        birthdate: null,
-        allowFutureDates: false, // Default: No future dates allowed
-      }}
-      validationSchema={Yup.object({
-        fullname: Yup.string().required('Fullname is required'),
-        email: Yup.string()
-          .email('Invalid email address')
-          .required('Email is required'),
-        username: Yup.string()
-          .trim()
-          .min(8, 'Username must be at least 8 characters')
-          .required('Username is required'),
-        password: Yup.string()
-          .min(10, 'Password must be at least 10 characters')
-          .required('Password is required'),
-        birthdate: Yup.date()
-          .required('Birth date is required')
-          .max(new Date(), 'Birth date cannot be in the future'),
-      })}
+    <FormikWrapper<RegisterFormValues>
+      initialValues={registerInitialValues}
+      validationSchema={registerValidationSchema}
       onSubmit={handleRegister}
     >
       {(formik) => {
@@ -161,7 +95,7 @@ const RegisterForm = () => {
                   </label>
                   <button
                     type="button"
-                    onClick={() => setShowDatePicker(true)}
+                    onClick={openDatePicker}
                     className="mt-1 w-full flex items-center justify-between rounded-lg border border-gray-300 px-3 py-2 text-left"
                   >
                     {formik.values.birthdate
@@ -216,9 +150,9 @@ const RegisterForm = () => {
                     selectedDate={formik.values.birthdate}
                     onChange={(date) => {
                       formik.setFieldValue('birthdate', date);
-                      setShowDatePicker(false);
+                      closeDatePicker();
                     }}
-                    onClose={() => setShowDatePicker(false)}
+                    onClose={closeDatePicker}
                     disableFutureDates={true}
                     currentMonth={currentMonth} // Pass currentMonth ke DatePicker
                   />
@@ -228,7 +162,7 @@ const RegisterForm = () => {
           </div>
         );
       }}
-    </Formik>
+    </FormikWrapper>
   );
 };
 

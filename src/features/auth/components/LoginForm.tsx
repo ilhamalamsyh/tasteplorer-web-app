@@ -4,72 +4,30 @@
 'use client'; // Add this line
 
 import React, { useState } from 'react';
-import { Formik, FormikHelpers } from 'formik';
-import * as Yup from 'yup';
 import TextField from '@/core/components/field/TextField';
-import { useAuth } from '@/context/AuthContext';
-import { useMutation } from '@apollo/client';
-import { LOGIN_MUTATION } from '../services/mutation';
 import Snackbar from '@/core/components/snackbar/Snackbar';
-
-// Define the type for the form values
-interface FormValues {
-  username: string;
-  password: string;
-}
+import FormikWrapper from '@/core/components/form/FormikWrapper';
+import {
+  LoginFormValues,
+  loginInitialValues,
+  loginValidationSchema,
+} from '../data/authSchema';
+import { useHandleLogin } from '../services/authService';
+import useTogglePassword from '@/core/hooks/useTogglePassword';
 
 const LoginForm = () => {
-  const { login } = useAuth();
-  const [loginMutation, { loading }] = useMutation<{
-    login: { user: any; token: string };
-  }>(LOGIN_MUTATION);
-
   const [error, setError] = useState<string>('');
-  const [showPassword, setShowPassword] = useState<boolean>(false);
-
-  const handleLogin = async (
-    values: FormValues,
-    actions: FormikHelpers<FormValues>
-  ) => {
-    try {
-      const { data } = await loginMutation({
-        variables: {
-          input: { username: values.username, password: values.password },
-        },
-      });
-
-      if (data) {
-        login(data.login.user, data.login.token);
-        actions.resetForm();
-      }
-    } catch (error: any) {
-      setError(error.message || 'Something went wrong.');
-    }
-  };
+  const { handleLogin, loading } = useHandleLogin(setError);
+  const { showPassword, togglePasswordVisibility } = useTogglePassword();
 
   const handleCloseSnackbar = () => {
     setError('');
   };
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
-
   return (
-    <Formik<FormValues>
-      initialValues={{
-        username: '',
-        password: '',
-      }}
-      validationSchema={Yup.object({
-        username: Yup.string()
-          .trim()
-          .required('Username is required or cannot contain whitespace only'),
-        password: Yup.string()
-          .trim()
-          .min(6, 'Password must be at least 6 characters')
-          .required('Password is required or cannot contain whitespace only'),
-      })}
+    <FormikWrapper<LoginFormValues>
+      initialValues={loginInitialValues}
+      validationSchema={loginValidationSchema}
       onSubmit={handleLogin}
     >
       {(formik) => (
@@ -109,10 +67,17 @@ const LoginForm = () => {
                 </a>
               </div>
               <button
+                disabled={loading || formik.isSubmitting}
                 type="submit"
-                className="w-full py-2 bg-orange-500 text-white font-semibold rounded-3xl hover:bg-orange-600"
+                className={`w-full py-2 flex items-center justify-center gap-2 font-semibold rounded-3xl transition-all
+                  ${
+                    loading || formik.isSubmitting
+                      ? 'bg-gray-400 cursor-not-allowed'
+                      : 'bg-orange-500 hover:bg-orange-600 text-white'
+                  }
+                `}
               >
-                Login
+                {loading ? 'Logging in...' : 'Login'}
               </button>
               <Snackbar
                 variant="error"
@@ -129,7 +94,7 @@ const LoginForm = () => {
           </div>
         </div>
       )}
-    </Formik>
+    </FormikWrapper>
   );
 };
 
