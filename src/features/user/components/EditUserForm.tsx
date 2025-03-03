@@ -4,66 +4,67 @@
 'use client'; // Add this line
 
 import React, { useState, useEffect } from 'react';
-import { Formik } from 'formik';
-import * as Yup from 'yup';
 import TextField from '@/core/components/field/TextField';
 import { DatePicker } from '@/core/components/datepicker/DatePicker';
 import { format } from 'date-fns';
 import SingleFileDropZone from '@/core/components/field/FileDropZone';
-import SelectOptionField from '@/core/components/field/SelectOptionField';
+import useDatePicker from '@/core/hooks/useDatePicker';
+import {
+  EditUserFormValues,
+  editUserInitialValues,
+  editUserValidationSchema,
+} from '../data/editUserSchema';
+import FormikWrapper from '@/core/components/form/FormikWrapper';
+import useSnackbar from '@/core/hooks/useSnackbar';
+import { useHandleEditUser } from '../services/userService';
+import { decodeJWT } from '@/utils/jwt/jwt_util';
+import { useQuery } from '@apollo/client';
+import { CURRENT_USER } from '../services/query';
+import { useRouter } from 'next/navigation';
 
 // Define the type for the form values
-interface FormValues {
-  fullname: string;
-  email: string;
-  password: string;
-  gender: string;
-  birthdate: Date | null;
-  image: string;
-  allowFutureDates: boolean; // Default: No future dates allowed
-}
-
-const options = [
-  { id: 'M', name: 'Pria' },
-  { id: 'F', name: 'Wanita' },
-];
 
 const EditUserForm = () => {
-  const [error, setError] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [showDatePicker, setShowDatePicker] = useState(false);
+  const router = useRouter();
+  const [userId, setUserId] = useState<number | null>(null);
+  const { error, showError, handleCloseSnackbar } = useSnackbar();
+  const { data, loading, error: queryError } = useQuery(CURRENT_USER);
+  const { handleEditUser } = useHandleEditUser(userId, showError, router);
+  const { showDatePicker, openDatePicker, closeDatePicker } = useDatePicker();
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
+  const [initialValues, setInitialValues] = useState<EditUserFormValues>(
+    editUserInitialValues
+  );
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('token');
+      const decoded = decodeJWT(token);
+      setUserId(decoded?.sub ? parseInt(decoded.sub, 10) : null);
+    }
+
+    if (data?.currentUser) {
+      setInitialValues((prev) => ({
+        ...prev,
+        fullname: data.currentUser.fullname || prev.fullname,
+        username: data.currentUser.username || prev.username,
+        email: data.currentUser.email || prev.email,
+        birthdate: data.currentUser.birthDate
+          ? new Date(data.currentUser.birthDate)
+          : prev.birthdate,
+      }));
+    }
+  }, [data]);
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error...</p>;
 
   return (
-    <Formik<FormValues>
-      initialValues={{
-        fullname: '',
-        email: '',
-        password: '',
-        gender: '',
-        birthdate: null,
-        image: '',
-        allowFutureDates: false, // Default: No future dates allowed
-      }}
-      validationSchema={Yup.object({
-        fullname: Yup.string().required('Fullname is required'),
-        email: Yup.string()
-          .email('Invalid email address')
-          .required('Email is required'),
-        password: Yup.string()
-          .min(6, 'Password must be at least 6 characters')
-          .required('Password is required'),
-        gender: Yup.string().required('Gender is required'),
-        birthdate: Yup.date()
-          .required('Birth date is required')
-          .max(new Date(), 'Birth date cannot be in the future'),
-      })}
-      onSubmit={(values) => {
-        console.log('Form submitted with:', values);
-      }}
+    <FormikWrapper<EditUserFormValues>
+      initialValues={initialValues}
+      validationSchema={editUserValidationSchema}
+      onSubmit={handleEditUser}
+      enableReinitialize
     >
       {(formik) => {
         // Manage the current month based on the selected date
@@ -77,13 +78,7 @@ const EditUserForm = () => {
         }, [formik.values.birthdate]);
 
         return (
-          <div
-            className="flex items-center justify-center min-h-screen bg-cover bg-center font-poppins p-4 md:p-0"
-            style={{
-              backgroundImage:
-                "url('https://thumbs.dreamstime.com/b/well-organized-food-layout-recipe-background-generous-copy-space-adding-recipes-text-329115865.jpg')",
-            }}
-          >
+          <div className="flex items-center justify-center min-h-screen bg-cover bg-center font-poppins p-4 md:p-0">
             <div className="bg-white bg-opacity-90 px-6 py-8 md:px-20 md:py-10 rounded-3xl shadow-md w-full max-w-2xl">
               <h2 className="text-2xl font-bold text-center text-orange-600 mb-4 font-sans-serif mb-12">
                 Edit Profile
@@ -111,6 +106,13 @@ const EditUserForm = () => {
                   placeholder="Enter your email"
                   label="Email"
                 />
+                <TextField
+                  name="username"
+                  type="text"
+                  formik={formik}
+                  placeholder="Enter your username"
+                  label="Username"
+                />
                 {/* Using MaterialDatePicker */}
                 <div className="mt-4">
                   <label
@@ -121,7 +123,7 @@ const EditUserForm = () => {
                   </label>
                   <button
                     type="button"
-                    onClick={() => setShowDatePicker(true)}
+                    onClick={openDatePicker}
                     className="mt-1 w-full flex items-center justify-between rounded-lg border border-gray-300 px-3 py-2 text-left"
                   >
                     {formik.values.birthdate
@@ -148,22 +150,17 @@ const EditUserForm = () => {
                     </div>
                   )}
                 </div>
-
-                <SelectOptionField
-                  name="gender"
-                  label="Gender"
-                  isMultiple={false}
-                  options={options}
-                />
-
-                {error && <p className="text-sm text-red-600">{error}</p>}
                 <div className="flex items-center justify-center font-poppins">
-                  {' '}
                   <button
                     type="submit"
-                    className="w-full max-w-md py-2 bg-orange-500 text-white font-semibold rounded-3xl hover:bg-orange-600 mt-8"
+                    disabled={!formik.isValid || formik.isSubmitting}
+                    className={`w-full max-w-md py-2 ${
+                      !formik.isValid || formik.isSubmitting
+                        ? 'bg-gray-400 cursor-not-allowed'
+                        : 'bg-orange-500 hover:bg-orange-600'
+                    } text-white font-semibold rounded-3xl mt-8`}
                   >
-                    Edit
+                    {formik.isSubmitting ? 'Saving...' : 'Save'}
                   </button>
                 </div>
               </form>
@@ -173,9 +170,9 @@ const EditUserForm = () => {
                     selectedDate={formik.values.birthdate}
                     onChange={(date) => {
                       formik.setFieldValue('birthdate', date);
-                      setShowDatePicker(false);
+                      closeDatePicker();
                     }}
-                    onClose={() => setShowDatePicker(false)}
+                    onClose={closeDatePicker}
                     disableFutureDates={true}
                     currentMonth={currentMonth} // Pass currentMonth ke DatePicker
                   />
@@ -185,7 +182,7 @@ const EditUserForm = () => {
           </div>
         );
       }}
-    </Formik>
+    </FormikWrapper>
   );
 };
 
