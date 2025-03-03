@@ -14,21 +14,19 @@ import {
 } from '../data/authSchema';
 import { useHandleLogin } from '../services/authService';
 import useTogglePassword from '@/core/hooks/useTogglePassword';
+import useSnackbar from '@/core/hooks/useSnackbar';
 
 const LoginForm = () => {
-  const [error, setError] = useState<string>('');
-  const { handleLogin, loading } = useHandleLogin(setError);
+  const { error, showError, handleCloseSnackbar } = useSnackbar();
+  const { handleLogin, loading } = useHandleLogin(showError);
   const { showPassword, togglePasswordVisibility } = useTogglePassword();
-
-  const handleCloseSnackbar = () => {
-    setError('');
-  };
 
   return (
     <FormikWrapper<LoginFormValues>
       initialValues={loginInitialValues}
       validationSchema={loginValidationSchema}
       onSubmit={handleLogin}
+      enableReinitialize
     >
       {(formik) => (
         <div

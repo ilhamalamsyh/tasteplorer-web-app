@@ -18,24 +18,22 @@ import { useHandleRegister } from '../services/authService';
 import useTogglePassword from '@/core/hooks/useTogglePassword';
 import FormikWrapper from '@/core/components/form/FormikWrapper';
 import useDatePicker from '@/core/hooks/useDatePicker';
+import useSnackbar from '@/core/hooks/useSnackbar';
 
 // Define the type for the form values
 
 const RegisterForm = () => {
-  const [error, setError] = useState<string>('');
-  const { handleRegister, loading } = useHandleRegister(setError);
+  const { error, showError, handleCloseSnackbar } = useSnackbar();
+  const { handleRegister, loading } = useHandleRegister(showError);
   const { showPassword, togglePasswordVisibility } = useTogglePassword();
   const { showDatePicker, openDatePicker, closeDatePicker } = useDatePicker();
-
-  const handleCloseSnackbar = () => {
-    setError('');
-  };
 
   return (
     <FormikWrapper<RegisterFormValues>
       initialValues={registerInitialValues}
       validationSchema={registerValidationSchema}
       onSubmit={handleRegister}
+      enableReinitialize={false}
     >
       {(formik) => {
         // Manage the current month based on the selected date
