@@ -10,7 +10,7 @@ import SectionDivider from '@/core/components/SectionDivider/SectionDivider';
 import RecipeSection from '@/core/components/RecipeSection/RecipeSection';
 import HorizontalScrollSection from '@/core/components/HorizontalScrollSection/HorizontalScrollSection';
 
-const ExplorerPage = () => {
+const ExplorePage = () => {
   const router = useRouter();
   const [recipesState, setRecipesState] = React.useState(recipesData);
   const [openMenuIndex, setOpenMenuIndex] = React.useState<number | null>(null);
@@ -123,4 +123,5 @@ const ExplorerPage = () => {
   );
 };
 
-export default ExplorerPage;
+export default ExplorePage;
+ch;
