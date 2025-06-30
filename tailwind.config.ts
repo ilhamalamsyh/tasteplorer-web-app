@@ -17,6 +17,7 @@ export default {
         bgcolor: '#F7F4E3',
       },
       fontFamily: {
+        inter: ['Inter', 'sans-serif'],
         poppins: ['Poppins', 'sans-serif'],
       },
     },
