@@ -5,7 +5,33 @@
 @tailwind components;
 @tailwind utilities;
 
-/* You can add custom global styles here if needed */
+/* Custom styles */
+@layer base {
+  html {
+    @apply overflow-x-hidden;
+  }
+
+  body {
+    @apply overflow-x-hidden;
+  }
+
+  /* Custom scrollbar for desktop */
+  @media (min-width: 768px) {
+    ::-webkit-scrollbar {
+      width: 0;
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: transparent;
+    }
+  }
+}
+
+/* Modal open state */
+.modal-open {
+  @apply overflow-hidden pr-0;
+}
 
 /* Hide scrollbar utility */
 .scrollbar-hide::-webkit-scrollbar {

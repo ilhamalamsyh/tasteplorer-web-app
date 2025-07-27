@@ -12,7 +12,7 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
-    <html lang="en">
+    <html lang="en" className="h-full">
       <head>
         {/* Google Fonts Link for Inter */}
         <link
@@ -22,7 +22,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Tasteplorer</title>
       </head>
-      <body className="font-inter">
+      <body className="h-full font-inter scrollbar-hide">
         <Providers>
           <ClientLayout>{children}</ClientLayout>
         </Providers>

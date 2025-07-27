@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Header from '@/core/components/section/Header';
 import MobileNavbar from '@/core/components/section/MobileNavbar';
-import LoginModal from '@/core/components/modal/LoginModal';
+import LoginModal from '@/features/auth/components/LoginModal';
 
 interface ClientLayoutProps {
   children: React.ReactNode;
@@ -28,25 +28,27 @@ const ClientLayout: React.FC<ClientLayoutProps> = ({ children }) => {
   const hideLayoutPages = ['/login', '/register'].includes(pathname);
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="relative min-h-screen flex flex-col w-full">
       {!hideLayoutPages && (
         <>
           <Header />
-          <div className="hidden:md:block h-16"></div>
+          <div className="h-16" /> {/* Spacer for fixed header */}
         </>
       )}
 
       <main
-        className={`flex-1 container mx-auto p-4${
-          !hideLayoutPages && isMobile ? ' pb-16' : ''
+        className={`flex-1 w-full mx-auto ${
+          !hideLayoutPages && isMobile ? 'pb-16' : ''
         }`}
       >
         {children}
       </main>
+
       {!hideLayoutPages && isMobile && <MobileNavbar />}
-      {modal === 'login' && !isMobile && (
-        <LoginModal onClose={() => setModal(null)} />
-      )}
+      <LoginModal
+        isOpen={modal === 'login' && !isMobile}
+        onClose={() => setModal(null)}
+      />
     </div>
   );
 };
