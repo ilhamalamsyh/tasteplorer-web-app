@@ -28,7 +28,11 @@ interface RegisterFormProps {
   onSwitchToLogin?: () => void;
 }
 
-const RegisterForm: React.FC<RegisterFormProps> = ({ isModal = false, onClose, onSwitchToLogin }) => {
+const RegisterForm: React.FC<RegisterFormProps> = ({
+  isModal = false,
+  onClose,
+  onSwitchToLogin,
+}) => {
   const router = useRouter();
   const { error, showError, handleCloseSnackbar } = useSnackbar();
   const { handleRegister, loading } = useHandleRegister(showError);
@@ -122,7 +126,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ isModal = false, onClose, o
                   showPassword={showPassword}
                   togglePasswordVisibility={togglePasswordVisibility}
                 />
-                
+
                 <div className="space-y-2">
                   <label
                     htmlFor="birthdate"
@@ -183,7 +187,10 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ isModal = false, onClose, o
                 {!isModal && (
                   <p className="text-sm text-center mt-4">
                     Already have an account?{' '}
-                    <a href="/login" className="text-orange-500 hover:underline">
+                    <a
+                      href="/login"
+                      className="text-orange-500 hover:underline"
+                    >
                       Log In
                     </a>
                   </p>

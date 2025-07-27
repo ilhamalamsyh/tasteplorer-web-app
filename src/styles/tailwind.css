@@ -10,7 +10,7 @@
   html {
     @apply overflow-x-hidden;
   }
-  
+
   body {
     @apply overflow-x-hidden;
   }
@@ -21,7 +21,7 @@
       width: 0;
       background: transparent;
     }
-    
+
     ::-webkit-scrollbar-thumb {
       background: transparent;
     }

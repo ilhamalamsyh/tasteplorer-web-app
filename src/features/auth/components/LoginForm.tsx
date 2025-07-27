@@ -24,7 +24,11 @@ interface LoginFormProps {
   onSwitchToRegister?: () => void;
 }
 
-const LoginForm: React.FC<LoginFormProps> = ({ isModal = false, onClose, onSwitchToRegister }) => {
+const LoginForm: React.FC<LoginFormProps> = ({
+  isModal = false,
+  onClose,
+  onSwitchToRegister,
+}) => {
   const router = useRouter();
   const { error, showError, handleCloseSnackbar } = useSnackbar();
   const { handleLogin, loading } = useHandleLogin(showError);
@@ -96,7 +100,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ isModal = false, onClose, onSwitc
                 showPassword={showPassword}
                 togglePasswordVisibility={togglePasswordVisibility}
               />
-              
+
               <div className="flex items-center justify-between mt-4">
                 <label className="flex items-center">
                   <input type="checkbox" className="mr-2" />
@@ -138,7 +142,10 @@ const LoginForm: React.FC<LoginFormProps> = ({ isModal = false, onClose, onSwitc
                     Register
                   </button>
                 ) : (
-                  <a href="/register" className="text-orange-500 hover:underline">
+                  <a
+                    href="/register"
+                    className="text-orange-500 hover:underline"
+                  >
                     Register
                   </a>
                 )}
