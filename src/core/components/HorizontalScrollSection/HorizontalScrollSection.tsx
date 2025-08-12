@@ -55,7 +55,7 @@ const HorizontalScrollSection: React.FC<HorizontalScrollSectionProps> = ({
         {showLeft && (
           <button
             onClick={() => scroll('left')}
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white border border-gray-200 rounded-full shadow-sm w-8 h-8 flex items-center justify-center hover:bg-gray-100 transition"
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white border border-gray-200 rounded-full shadow-sm w-8 h-8 hidden md:flex items-center justify-center hover:bg-gray-100 transition"
           >
             <svg
               width="20"
@@ -77,7 +77,7 @@ const HorizontalScrollSection: React.FC<HorizontalScrollSectionProps> = ({
         {showRight && (
           <button
             onClick={() => scroll('right')}
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white border border-gray-200 rounded-full shadow-sm w-8 h-8 flex items-center justify-center hover:bg-gray-100 transition"
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white border border-gray-200 rounded-full shadow-sm w-8 h-8 hidden md:flex items-center justify-center hover:bg-gray-100 transition"
           >
             <svg
               width="20"
@@ -98,7 +98,7 @@ const HorizontalScrollSection: React.FC<HorizontalScrollSectionProps> = ({
         )}
         <div
           ref={scrollRef}
-          className="flex space-x-4 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-hide"
+          className="flex space-x-4 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-hide touch-pan-x"
         >
           {children}
         </div>
