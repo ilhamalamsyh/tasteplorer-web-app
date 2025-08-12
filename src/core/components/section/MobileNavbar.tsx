@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import React, { useState, useEffect } from 'react';
 import { GoHome, GoSearch } from 'react-icons/go';
 import { LuUserRound } from 'react-icons/lu';
@@ -8,6 +8,7 @@ import LoginModal from '@/features/auth/components/LoginModal';
 
 const MobileNavbar: React.FC = () => {
   const pathname = usePathname();
+  const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const { user, loading } = useAuth();
@@ -25,9 +26,11 @@ const MobileNavbar: React.FC = () => {
   };
 
   const handleProfileClick = (e: React.MouseEvent) => {
+    e.preventDefault();
     if (!user && !loading) {
-      e.preventDefault();
       handleLoginClick();
+    } else if (user) {
+      router.push('/profile');
     }
   };
 
@@ -37,13 +40,6 @@ const MobileNavbar: React.FC = () => {
     }
 
     const isActive = pathname === path;
-    const isProfileAttempt = path === '/profile' && !user && showLoginModal;
-
-    // Never show profile as active when login modal is shown for unauthenticated user
-    if (isProfileAttempt) {
-      return 'flex flex-col items-center text-gray-600 hover:text-primary/80';
-    }
-
     return isActive
       ? 'flex flex-col items-center text-primary'
       : 'flex flex-col items-center text-gray-600 hover:text-primary/80';
@@ -60,14 +56,14 @@ const MobileNavbar: React.FC = () => {
           <GoSearch className="w-6 h-6" />
           <span>Explore</span>
         </Link>
-        <Link
+        <a
           href="/profile"
           className={getLinkStyle('/profile')}
           onClick={handleProfileClick}
         >
           <LuUserRound className="w-6 h-6" />
           <span>Profile</span>
-        </Link>
+        </a>
       </nav>
       <LoginModal
         isOpen={showLoginModal}

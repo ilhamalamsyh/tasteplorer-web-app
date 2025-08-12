@@ -2,10 +2,12 @@ import Link from 'next/link';
 import React, { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import LoginModal from '@/features/auth/components/LoginModal';
+import { useRouter } from 'next/navigation';
 
 const Header: React.FC = () => {
   const { user, loading } = useAuth();
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const router = useRouter();
 
   const handleLoginClick = () => {
     setShowLoginModal(true);
@@ -16,9 +18,11 @@ const Header: React.FC = () => {
   };
 
   const handleProfileClick = (e: React.MouseEvent) => {
+    e.preventDefault();
     if (!user && !loading) {
-      e.preventDefault();
-      handleLoginClick();
+      router.push('/profile');
+    } else if (user) {
+      router.push('/profile');
     }
   };
 
@@ -54,18 +58,18 @@ const Header: React.FC = () => {
             >
               Explore
             </Link>
-            <Link
+            <a
               href="/profile"
-              className="text-gray-700 hover:text-primary font-medium transition"
+              className="text-gray-700 hover:text-primary font-medium transition cursor-pointer"
               onClick={handleProfileClick}
             >
               Profile
-            </Link>
+            </a>
           </nav>
           {/* User */}
           <div className="flex items-center">
             {!loading && user ? (
-              <Link href="/profile">
+              <a href="/profile" onClick={handleProfileClick}>
                 {user.image ? (
                   <img
                     src={user.image}
@@ -78,7 +82,7 @@ const Header: React.FC = () => {
                     {getInitials(user.fullname)}
                   </div>
                 )}
-              </Link>
+              </a>
             ) : (
               <button
                 onClick={handleLoginClick}
