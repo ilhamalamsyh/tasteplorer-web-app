@@ -39,8 +39,8 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
   return (
     <>
       {user ? children : null}
-      <LoginModal 
-        isOpen={showLoginModal} 
+      <LoginModal
+        isOpen={showLoginModal}
         onClose={handleCloseLoginModal}
         isMobileFullScreen={true}
       />
