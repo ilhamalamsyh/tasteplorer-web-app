@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import React, { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import LoginModal from '@/features/auth/components/LoginModal';
@@ -8,6 +9,16 @@ const Header: React.FC = () => {
   const { user, loading } = useAuth();
   const [showLoginModal, setShowLoginModal] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
+
+  const getLinkStyle = (path: string) => {
+    const isActive = pathname === path;
+    return `relative py-2 text-gray-700 font-medium transition ${
+      isActive
+        ? 'text-primary after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary'
+        : 'hover:text-primary'
+    }`;
+  };
 
   const handleLoginClick = () => {
     setShowLoginModal(true);
@@ -46,21 +57,15 @@ const Header: React.FC = () => {
           </Link>
           {/* Nav */}
           <nav className="hidden md:flex flex-1 justify-center space-x-8">
-            <Link
-              href="/"
-              className="text-gray-700 hover:text-primary font-medium transition"
-            >
+            <Link href="/" className={getLinkStyle('/')}>
               Home
             </Link>
-            <Link
-              href="/explore"
-              className="text-gray-700 hover:text-primary font-medium transition"
-            >
+            <Link href="/explore" className={getLinkStyle('/explore')}>
               Explore
             </Link>
             <a
               href="/profile"
-              className="text-gray-700 hover:text-primary font-medium transition cursor-pointer"
+              className={getLinkStyle('/profile')}
               onClick={handleProfileClick}
             >
               Profile

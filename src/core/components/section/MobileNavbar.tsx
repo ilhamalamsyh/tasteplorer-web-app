@@ -50,11 +50,11 @@ const MobileNavbar: React.FC = () => {
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white shadow-t-md p-2 border-t flex justify-around z-[90] isolate">
         <Link href="/" className={getLinkStyle('/')}>
           <GoHome className="w-6 h-6" />
-          <span>Home</span>
+          <span className="text-xs">Home</span>
         </Link>
         <Link href="/explore" className={getLinkStyle('/explore')}>
           <GoSearch className="w-6 h-6" />
-          <span>Explore</span>
+          <span className="text-xs">Explore</span>
         </Link>
         <a
           href="/profile"
@@ -62,7 +62,7 @@ const MobileNavbar: React.FC = () => {
           onClick={handleProfileClick}
         >
           <LuUserRound className="w-6 h-6" />
-          <span>Profile</span>
+          <span className="text-xs">Profile</span>
         </a>
       </nav>
       <LoginModal
