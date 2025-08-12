@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import React, { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
+import { useNavigation } from '@/context/NavigationContext';
 import LoginModal from '@/features/auth/components/LoginModal';
 import { useRouter } from 'next/navigation';
 
@@ -10,6 +11,7 @@ const Header: React.FC = () => {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
+  const { previousPath, setPreviousPath } = useNavigation();
 
   const getLinkStyle = (path: string) => {
     const isActive = pathname === path;
@@ -21,20 +23,26 @@ const Header: React.FC = () => {
   };
 
   const handleLoginClick = () => {
+    setPreviousPath(pathname);
     setShowLoginModal(true);
   };
 
   const handleCloseLoginModal = () => {
     setShowLoginModal(false);
+    if (previousPath) {
+      router.push(previousPath);
+      setPreviousPath(null);
+    } else {
+      router.push('/');
+    }
   };
 
   const handleProfileClick = (e: React.MouseEvent) => {
     e.preventDefault();
     if (!user && !loading) {
-      router.push('/profile');
-    } else if (user) {
-      router.push('/profile');
+      setPreviousPath(pathname);
     }
+    router.push('/profile');
   };
 
   // Helper for fallback initials
