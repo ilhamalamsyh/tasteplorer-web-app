@@ -35,7 +35,16 @@ const MobileNavbar: React.FC = () => {
     if (!mounted) {
       return 'flex flex-col items-center text-gray-600';
     }
-    return pathname === path
+
+    const isActive = pathname === path;
+    const isProfileAttempt = path === '/profile' && !user && showLoginModal;
+
+    // Never show profile as active when login modal is shown for unauthenticated user
+    if (isProfileAttempt) {
+      return 'flex flex-col items-center text-gray-600 hover:text-primary/80';
+    }
+
+    return isActive
       ? 'flex flex-col items-center text-primary'
       : 'flex flex-col items-center text-gray-600 hover:text-primary/80';
   };
@@ -43,16 +52,16 @@ const MobileNavbar: React.FC = () => {
   return (
     <>
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white shadow-t-md p-2 border-t flex justify-around z-[90] isolate">
-        <Link href={'/'} className={getLinkStyle('/')}>
+        <Link href="/" className={getLinkStyle('/')}>
           <GoHome className="w-6 h-6" />
           <span>Home</span>
         </Link>
-        <Link href={'/explore'} className={getLinkStyle('/explore')}>
+        <Link href="/explore" className={getLinkStyle('/explore')}>
           <GoSearch className="w-6 h-6" />
           <span>Explore</span>
         </Link>
         <Link
-          href={'/profile'}
+          href="/profile"
           className={getLinkStyle('/profile')}
           onClick={handleProfileClick}
         >
@@ -60,7 +69,11 @@ const MobileNavbar: React.FC = () => {
           <span>Profile</span>
         </Link>
       </nav>
-      <LoginModal isOpen={showLoginModal} onClose={handleCloseLoginModal} />
+      <LoginModal
+        isOpen={showLoginModal}
+        onClose={handleCloseLoginModal}
+        isMobileFullScreen={true}
+      />
     </>
   );
 };

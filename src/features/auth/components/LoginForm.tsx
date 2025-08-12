@@ -57,11 +57,11 @@ const LoginForm: React.FC<LoginFormProps> = ({
 
   // Conditional classes based on whether the form is in a modal or standalone page
   const containerClasses = isModal
-    ? 'w-full max-w-md mx-auto py-4 md:py-6'
+    ? 'w-full max-w-md mx-auto pt-14 pb-6 px-6 md:px-8'
     : 'flex items-center justify-center min-h-screen bg-cover bg-center bg-bgcolor font-poppins p-4 md:p-0';
 
   const formContainerClasses = isModal
-    ? 'w-full px-4 md:px-0'
+    ? 'w-full'
     : 'bg-white bg-opacity-90 px-6 py-8 md:px-20 md:py-10 rounded-3xl shadow-md w-full max-w-2xl';
 
   return (
