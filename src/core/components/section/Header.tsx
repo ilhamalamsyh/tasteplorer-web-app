@@ -15,6 +15,13 @@ const Header: React.FC = () => {
     setShowLoginModal(false);
   };
 
+  const handleProfileClick = (e: React.MouseEvent) => {
+    if (!user && !loading) {
+      e.preventDefault();
+      handleLoginClick();
+    }
+  };
+
   // Helper for fallback initials
   const getInitials = (name: string) =>
     name
@@ -28,22 +35,31 @@ const Header: React.FC = () => {
       <header className="flex bg-white shadow-sm h-16 fixed top-0 w-full z-50">
         <div className="flex items-center justify-between w-full max-w-6xl mx-auto px-8 h-full">
           {/* Logo */}
-          <h1 className="text-2xl font-bold text-primary font-poppins tracking-tight">
-            Tasteplorer
-          </h1>
+          <Link href="/">
+            <h1 className="text-2xl font-bold text-primary font-poppins tracking-tight cursor-pointer">
+              Tasteplorer
+            </h1>
+          </Link>
           {/* Nav */}
           <nav className="hidden md:flex flex-1 justify-center space-x-8">
             <Link
-              href={'/'}
+              href="/"
               className="text-gray-700 hover:text-primary font-medium transition"
             >
               Home
             </Link>
             <Link
-              href={'/about'}
+              href="/explore"
               className="text-gray-700 hover:text-primary font-medium transition"
             >
-              About
+              Explore
+            </Link>
+            <Link
+              href="/profile"
+              className="text-gray-700 hover:text-primary font-medium transition"
+              onClick={handleProfileClick}
+            >
+              Profile
             </Link>
           </nav>
           {/* User */}
