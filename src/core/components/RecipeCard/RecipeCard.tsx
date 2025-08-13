@@ -30,7 +30,7 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
   menuOpen,
 }) => (
   <div
-    className="min-w-[220px] max-w-[220px] bg-white rounded-2xl transition overflow-hidden flex flex-col border border-transparent p-0 mr-0 relative group cursor-pointer"
+    className="min-w-[220px] max-w-[220px] bg-white rounded-2xl transition overflow-hidden flex flex-col border border-transparent p-0 mr-0 relative group cursor-pointer isolate"
     onClick={onClick}
   >
     {/* Image with badge, bookmark, author, and menu */}
@@ -40,20 +40,20 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
         alt={title}
         className="w-full h-full object-cover rounded-t-2xl transition-transform duration-300 group-hover:scale-110"
       />
-      {/* Rating badge */}
-      <div className="absolute top-2 left-2 bg-white/90 rounded-full px-2 py-1 flex items-center text-xs font-bold text-gray-800 shadow">
+      {/* Rating badge with increased z-index */}
+      <div className="absolute top-2 left-2 bg-white/90 rounded-full px-2 py-1 flex items-center text-xs font-bold text-gray-800 shadow z-[100]">
         <svg
           className="w-4 h-4 mr-1 text-primary"
           fill="currentColor"
           viewBox="0 0 20 20"
         >
-          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.967a1 1 0 00.95.69h4.175c.969 0 1.371 1.24.588 1.81l-3.38 2.455a1 1 0 00-.364 1.118l1.287 3.966c.3.922-.755 1.688-1.54 1.118l-3.38-2.454a1 1 0 00-1.175 0l-3.38 2.454c-.784.57-1.838-.196-1.54-1.118l1.287-3.966a1 1 0 00-.364-1.118L2.05 9.394c-.783-.57-.38-1.81.588-1.81h4.175a1 1 0 00.95-.69l1.286-3.967z" />
+          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.967a1 1 0 00.95.69h4.175c.969 0 1.371 1.24.588 1.81l-3.38 2.455a1 1 0 00-.364 1.118l1.287 3.966c.3.922-.755 1.688-1.54 1.118l-3.38-2.454a1 1 0 00-1.175 0l-3.38 2.454c-.784.57-1.838-.196-1.54-1.118l1.287-3.966a1 1 0 00-.364-1.118L2.05 9.394c-.783-.57-.38-1.81.588-1.81h4.175a1 1 0 00.95-.69L9.049 2.927z" />
         </svg>
         {rating}%
       </div>
-      {/* Bookmark icon */}
+      {/* Bookmark icon with increased z-index */}
       <button
-        className="absolute top-2 right-2 bg-white/90 rounded-full p-1 shadow z-10"
+        className="absolute top-2 right-2 bg-white/90 rounded-full p-1 shadow z-[100]"
         onClick={onBookmark}
       >
         {isBookmarked ? (
@@ -80,8 +80,8 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
           </svg>
         )}
       </button>
-      {/* Author and menu inside image, bottom overlay */}
-      <div className="absolute left-0 right-0 bottom-0 px-3 pb-3 flex items-center justify-between z-10 bg-gradient-to-t from-black/60 to-transparent">
+      {/* Author and menu with increased z-index */}
+      <div className="absolute left-0 right-0 bottom-0 px-3 pb-3 flex items-center justify-between z-[100] bg-gradient-to-t from-black/60 to-transparent">
         <div className="flex items-center space-x-2 bg-white/80 rounded-full px-2 py-1">
           <img
             src={authorAvatar}
@@ -93,7 +93,7 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
           </span>
         </div>
         <button
-          className="bg-white/80 rounded-full p-1 ml-2 z-10"
+          className="bg-white/80 rounded-full p-1 ml-2 z-[100]"
           onClick={onMenu}
         >
           <svg
@@ -106,9 +106,9 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
             <circle cx="16" cy="10" r="2" />
           </svg>
         </button>
-        {/* Action menu placeholder */}
+        {/* Action menu with increased z-index */}
         {menuOpen && (
-          <div className="absolute right-0 bottom-10 bg-white border rounded shadow-lg p-2 text-sm z-20">
+          <div className="absolute right-0 bottom-10 bg-white border rounded shadow-lg p-2 text-sm z-[110]">
             <div className="py-1 px-3 hover:bg-gray-100 cursor-pointer">
               Share
             </div>

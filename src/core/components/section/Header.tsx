@@ -1,18 +1,48 @@
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import React, { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
+import { useNavigation } from '@/context/NavigationContext';
 import LoginModal from '@/features/auth/components/LoginModal';
+import { useRouter } from 'next/navigation';
 
 const Header: React.FC = () => {
   const { user, loading } = useAuth();
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const router = useRouter();
+  const pathname = usePathname();
+  const { previousPath, setPreviousPath } = useNavigation();
+
+  const getLinkStyle = (path: string) => {
+    const isActive = pathname === path;
+    return `relative py-2 text-gray-700 font-medium transition ${
+      isActive
+        ? 'text-primary after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary'
+        : 'hover:text-primary'
+    }`;
+  };
 
   const handleLoginClick = () => {
+    setPreviousPath(pathname);
     setShowLoginModal(true);
   };
 
   const handleCloseLoginModal = () => {
     setShowLoginModal(false);
+    if (previousPath) {
+      router.push(previousPath);
+      setPreviousPath(null);
+    } else {
+      router.push('/');
+    }
+  };
+
+  const handleProfileClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!user && !loading) {
+      setPreviousPath(pathname);
+    }
+    router.push('/profile');
   };
 
   // Helper for fallback initials
@@ -28,28 +58,31 @@ const Header: React.FC = () => {
       <header className="flex bg-white shadow-sm h-16 fixed top-0 w-full z-50">
         <div className="flex items-center justify-between w-full max-w-6xl mx-auto px-8 h-full">
           {/* Logo */}
-          <h1 className="text-2xl font-bold text-primary font-poppins tracking-tight">
-            Tasteplorer
-          </h1>
+          <Link href="/">
+            <h1 className="text-2xl font-bold text-primary font-poppins tracking-tight cursor-pointer">
+              Tasteplorer
+            </h1>
+          </Link>
           {/* Nav */}
           <nav className="hidden md:flex flex-1 justify-center space-x-8">
-            <Link
-              href={'/'}
-              className="text-gray-700 hover:text-primary font-medium transition"
-            >
+            <Link href="/" className={getLinkStyle('/')}>
               Home
             </Link>
-            <Link
-              href={'/about'}
-              className="text-gray-700 hover:text-primary font-medium transition"
-            >
-              About
+            <Link href="/explore" className={getLinkStyle('/explore')}>
+              Explore
             </Link>
+            <a
+              href="/profile"
+              className={getLinkStyle('/profile')}
+              onClick={handleProfileClick}
+            >
+              Profile
+            </a>
           </nav>
           {/* User */}
           <div className="flex items-center">
             {!loading && user ? (
-              <Link href="/profile">
+              <a href="/profile" onClick={handleProfileClick}>
                 {user.image ? (
                   <img
                     src={user.image}
@@ -62,7 +95,7 @@ const Header: React.FC = () => {
                     {getInitials(user.fullname)}
                   </div>
                 )}
-              </Link>
+              </a>
             ) : (
               <button
                 onClick={handleLoginClick}

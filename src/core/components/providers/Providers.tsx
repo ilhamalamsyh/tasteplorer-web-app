@@ -3,6 +3,7 @@ import React from 'react';
 import { ApolloProvider } from '@apollo/client';
 import { client } from '@/lib/apollo-client';
 import { AuthProvider } from '@/context/AuthContext';
+import { NavigationProvider } from '@/context/NavigationContext';
 
 interface ProvidersProps {
   children: React.ReactNode;
@@ -11,7 +12,9 @@ interface ProvidersProps {
 const Providers: React.FC<ProvidersProps> = ({ children }) => {
   return (
     <ApolloProvider client={client}>
-      <AuthProvider>{children}</AuthProvider>
+      <NavigationProvider>
+        <AuthProvider>{children}</AuthProvider>
+      </NavigationProvider>
     </ApolloProvider>
   );
 };

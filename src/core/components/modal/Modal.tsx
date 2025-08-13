@@ -5,9 +5,15 @@ interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   children: ReactNode;
+  isMobileFullScreen?: boolean;
 }
 
-const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children }) => {
+const Modal: React.FC<ModalProps> = ({
+  isOpen,
+  onClose,
+  children,
+  isMobileFullScreen = false,
+}) => {
   const [isMobile, setIsMobile] = useState(false);
 
   // Use the scroll lock hook
@@ -32,16 +38,27 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children }) => {
     }
   };
 
+  const isFullScreenMobile = isMobile && isMobileFullScreen;
+
   return (
     <div
-      onClick={handleOverlayClick}
-      className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-[2px] z-50 transition-all duration-300 ease-in-out"
+      className={`fixed inset-0 z-[100] transition-all duration-300 ease-in-out ${
+        isFullScreenMobile
+          ? 'bg-white'
+          : 'bg-black bg-opacity-50 backdrop-blur-[2px]'
+      }`}
     >
       <div
         onClick={handleOverlayClick}
         className={`
           min-h-screen overflow-hidden
-          ${isMobile ? 'bg-bgcolor' : 'flex items-center justify-center p-4'}
+          ${
+            isFullScreenMobile
+              ? ''
+              : isMobile
+              ? 'bg-bgcolor'
+              : 'flex items-center justify-center p-4'
+          }
         `}
       >
         <div
@@ -49,13 +66,14 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children }) => {
           className={`
             bg-white relative overflow-y-auto scrollbar-hide
             ${
-              isMobile
+              isFullScreenMobile
+                ? 'min-h-screen w-full'
+                : isMobile
                 ? 'min-h-screen w-full px-6 py-8'
                 : 'w-full max-w-2xl mx-auto rounded-3xl shadow-xl transform transition-all duration-300 ease-out max-h-[90vh]'
             }
           `}
         >
-          {/* Close button - consistent for both mobile and desktop */}
           <button
             onClick={onClose}
             className="absolute right-6 top-6 text-gray-500 hover:text-gray-700 z-10 transition-colors p-2"
@@ -75,7 +93,6 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children }) => {
               />
             </svg>
           </button>
-
           {children}
         </div>
       </div>
