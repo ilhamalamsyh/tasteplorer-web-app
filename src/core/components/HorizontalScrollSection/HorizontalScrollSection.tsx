@@ -44,7 +44,7 @@ const HorizontalScrollSection: React.FC<HorizontalScrollSectionProps> = ({
 
   return (
     <section
-      className={`px-4 md:px-0 bg-white py-10 ${sectionWidth} mx-auto relative`}
+      className={`px-0 md:px-0 bg-white py-10 ${sectionWidth} mx-auto relative`}
     >
       {title && (
         <h2 className="text-2xl font-semibold mb-6 font-poppins text-gray-800 text-left">

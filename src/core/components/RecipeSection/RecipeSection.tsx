@@ -28,7 +28,7 @@ const RecipeSection: React.FC<RecipeSectionProps> = ({
   onMenu,
   openMenuIndex,
 }) => (
-  <section className="px-2 md:px-0 bg-white py-10 max-w-5xl mx-auto">
+  <section className="px-4 md:px-0 bg-white py-10 max-w-5xl mx-auto">
     <div className="flex items-center justify-between mb-0">
       <h2 className="text-2xl font-semibold font-poppins text-gray-800 text-left">
         Discover recipes
@@ -40,7 +40,7 @@ const RecipeSection: React.FC<RecipeSectionProps> = ({
         See All
       </a>
     </div>
-    <p className="text-gray-500 text-sm mb-2 px-4">
+    <p className="text-gray-500 text-sm mb-2">
       Find and share everyday cooking inspiration with ratings and reviews you
       can trust. Recipes for easy dinners, healthy eating, fast and cheap,
       kid-friendly, and more.
