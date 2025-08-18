@@ -1,20 +1,41 @@
 'use client'; // Add this line
 
-import React from 'react';
+import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useQuery } from '@apollo/client';
 import { CURRENT_USER } from '../services/query';
 import { client } from '@/lib/apollo-client';
 import { Avatar } from '@/core/components/image/Avatar';
+import RecipeCard from '@/core/components/RecipeCard/RecipeCard';
 
 export const ProfileView = () => {
+  const router = useRouter();
   const { loading, error, data } = useQuery(CURRENT_USER, { client });
+  const [openMenuIndex, setOpenMenuIndex] = useState<number | null>(null);
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error.message}</p>;
 
   const { username, fullname, image } = data.currentUser;
+
+  const handleCardClick = (title: string) => {
+    router.push(
+      `/recipes/${encodeURIComponent(title.replace(/\s+/g, '-').toLowerCase())}`
+    );
+  };
+
+  const handleBookmark = (idx: number, e: React.MouseEvent<Element>) => {
+    e.stopPropagation();
+    // Update bookmark state
+  };
+
+  const handleMenu = (idx: number, e: React.MouseEvent<Element>) => {
+    e.stopPropagation();
+    setOpenMenuIndex(idx === openMenuIndex ? null : idx);
+  };
+
   return (
     <div>
       {/* Profile Section */}
@@ -51,32 +72,30 @@ export const ProfileView = () => {
         </div>
       </main>
 
-      {/* Empty State Content Section - FULL WIDTH */}
-      {/* ToDo: This code below is example on handling the user's recipe already exist or not. It will implement later */}
-      <div className="w-screen py-12 px-6 sm:px-24 text-center">
+      {/* Recipe Section */}
+      <div className="w-full py-6 sm:py-8 md:py-12">
         {username ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {sampleCards.map((card, index) => (
-              <div
-                key={index}
-                className="p-4 border rounded-lg shadow-lg bg-white"
-              >
-                <div className="w-20 h-20 mx-auto mb-4">
-                  <Image
-                    src={card.imageUrl}
-                    alt={card.title}
-                    width={100}
-                    height={100}
-                    className="rounded-full object-cover"
-                  />
-                </div>
-                <h2 className="text-lg font-semibold">{card.title}</h2>
-                <p className="text-gray-500 mb-4">{card.description}</p>
-                <button className="px-4 py-2 bg-orange-500 text-white font-semibold rounded-lg hover:bg-orange-600 transition">
-                  View Details
-                </button>
-              </div>
-            ))}
+          <div className="max-w-[900px] mx-auto px-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-4 lg:gap-6 justify-center">
+              {sampleCards.map((card, idx) => (
+                <RecipeCard
+                  key={idx}
+                  title={card.title}
+                  img={card.imageUrl}
+                  rating={card.rating}
+                  ingredients={card.ingredients}
+                  author={fullname}
+                  authorAvatar={image}
+                  isBookmarked={card.isBookmarked}
+                  time={card.time}
+                  onClick={() => handleCardClick(card.title)}
+                  onBookmark={(e) => handleBookmark(idx, e)}
+                  onMenu={(e) => handleMenu(idx, e)}
+                  menuOpen={openMenuIndex === idx}
+                  className="w-[160px] sm:w-[180px] md:w-[200px] lg:w-[220px]"
+                />
+              ))}
+            </div>
           </div>
         ) : (
           <>
@@ -105,31 +124,69 @@ export const ProfileView = () => {
   );
 };
 
-// this is mock data
+// Updated mock data to match RecipeCard props
 const sampleCards = [
   {
     title: 'Delicious Spaghetti',
-    description: 'A tasty homemade spaghetti recipe with rich tomato sauce.',
     imageUrl:
       'https://i.pinimg.com/736x/d3/51/84/d351847348dd0dabeac308be8e2bb072.jpg',
+    rating: 95,
+    ingredients: 8,
+    isBookmarked: false,
+    time: '30 mins',
   },
   {
     title: 'Refreshing Smoothie',
-    description: 'A healthy fruit smoothie packed with vitamins and flavor.',
     imageUrl:
       'https://i.pinimg.com/736x/d3/51/84/d351847348dd0dabeac308be8e2bb072.jpg',
+    rating: 88,
+    ingredients: 5,
+    isBookmarked: false,
+    time: '10 mins',
   },
   {
     title: 'Crispy Fried Chicken',
-    description: 'Golden-brown crispy chicken that’s juicy on the inside.',
     imageUrl:
       'https://i.pinimg.com/736x/d3/51/84/d351847348dd0dabeac308be8e2bb072.jpg',
+    rating: 92,
+    ingredients: 10,
+    isBookmarked: false,
+    time: '45 mins',
   },
   {
     title: 'Chocolate Cake',
-    description:
-      'A moist chocolate cake topped with rich dark chocolate ganache.',
     imageUrl:
       'https://i.pinimg.com/736x/d3/51/84/d351847348dd0dabeac308be8e2bb072.jpg',
+    rating: 97,
+    ingredients: 12,
+    isBookmarked: false,
+    time: '60 mins',
+  },
+  {
+    title: 'Chocolate Cake1',
+    imageUrl:
+      'https://i.pinimg.com/736x/d3/51/84/d351847348dd0dabeac308be8e2bb072.jpg',
+    rating: 97,
+    ingredients: 12,
+    isBookmarked: false,
+    time: '60 mins',
+  },
+  {
+    title: 'Chocolate Cake2',
+    imageUrl:
+      'https://i.pinimg.com/736x/d3/51/84/d351847348dd0dabeac308be8e2bb072.jpg',
+    rating: 97,
+    ingredients: 12,
+    isBookmarked: false,
+    time: '60 mins',
+  },
+  {
+    title: 'Chocolate Cake3',
+    imageUrl:
+      'https://i.pinimg.com/736x/d3/51/84/d351847348dd0dabeac308be8e2bb072.jpg',
+    rating: 97,
+    ingredients: 12,
+    isBookmarked: true,
+    time: '60 mins',
   },
 ];

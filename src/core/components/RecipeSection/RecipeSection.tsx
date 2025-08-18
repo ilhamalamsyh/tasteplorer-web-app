@@ -29,7 +29,7 @@ const RecipeSection: React.FC<RecipeSectionProps> = ({
   openMenuIndex,
 }) => (
   <section className="px-2 md:px-0 bg-white py-10 max-w-5xl mx-auto">
-    <div className="flex items-center justify-between mb-0 px-4">
+    <div className="flex items-center justify-between mb-0">
       <h2 className="text-2xl font-semibold font-poppins text-gray-800 text-left">
         Discover recipes
       </h2>
@@ -61,6 +61,7 @@ const RecipeSection: React.FC<RecipeSectionProps> = ({
           onBookmark={(e) => onBookmark(idx, e)}
           onMenu={(e) => onMenu(idx, e)}
           menuOpen={openMenuIndex === idx}
+          className="w-[160px] sm:w-[180px] md:w-[200px] lg:w-[220px]"
         />
       ))}
     </HorizontalScrollSection>
