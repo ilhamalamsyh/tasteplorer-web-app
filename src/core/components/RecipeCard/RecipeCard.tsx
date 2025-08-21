@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 
 interface RecipeCardProps {
   title: string;
@@ -13,6 +14,7 @@ interface RecipeCardProps {
   onBookmark: (e: React.MouseEvent) => void;
   onMenu: (e: React.MouseEvent) => void;
   menuOpen: boolean;
+  className?: string;
 }
 
 const RecipeCard: React.FC<RecipeCardProps> = ({
@@ -28,17 +30,20 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
   onBookmark,
   onMenu,
   menuOpen,
+  className = '',
 }) => (
   <div
-    className="min-w-[220px] max-w-[220px] bg-white rounded-2xl transition overflow-hidden flex flex-col border border-transparent p-0 mr-0 relative group cursor-pointer isolate"
+    className={`w-[190px] sm:w-[180px] md:w-[180px] lg:w-[190px] xl:w-[210px] bg-white rounded-2xl transition overflow-hidden flex flex-col border border-transparent p-0 relative cursor-pointer isolate ${className}`}
     onClick={onClick}
   >
     {/* Image with badge, bookmark, author, and menu */}
-    <div className="relative w-full h-80 overflow-hidden">
-      <img
+    <div className="relative w-full aspect-[4/6] overflow-hidden rounded-lg">
+      <Image
         src={img}
         alt={title}
-        className="w-full h-full object-cover rounded-t-2xl transition-transform duration-300 group-hover:scale-110"
+        fill
+        sizes="(max-width: 640px) 160px, (max-width: 768px) 180px, (max-width: 1024px) 200px, 220px"
+        className="object-cover rounded-lg transition-transform duration-300 hover:scale-110"
       />
       {/* Rating badge with increased z-index */}
       <div className="absolute top-2 left-2 bg-white/90 rounded-full px-2 py-1 flex items-center text-xs font-bold text-gray-800 shadow z-[100]">
@@ -81,23 +86,26 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
         )}
       </button>
       {/* Author and menu with increased z-index */}
-      <div className="absolute left-0 right-0 bottom-0 px-3 pb-3 flex items-center justify-between z-[100] bg-gradient-to-t from-black/60 to-transparent">
-        <div className="flex items-center space-x-2 bg-white/80 rounded-full px-2 py-1">
-          <img
-            src={authorAvatar}
-            alt={author}
-            className="w-6 h-6 rounded-full object-cover"
-          />
-          <span className="text-xs font-medium text-gray-700 truncate max-w-[80px]">
+      <div className="absolute left-0 right-0 bottom-0 px-2 sm:px-3 pb-2 sm:pb-3 flex items-center justify-between z-[100] bg-gradient-to-t from-black/60 to-transparent rounded-lg">
+        <div className="flex items-center space-x-1 sm:space-x-2 bg-white/80 rounded-full px-1.5 sm:px-2 py-1">
+          <div className="relative w-5 h-5 sm:w-6 sm:h-6">
+            <Image
+              src={authorAvatar}
+              alt={author}
+              fill
+              className="rounded-full object-cover"
+            />
+          </div>
+          <span className="text-[10px] sm:text-xs font-medium text-gray-700 truncate max-w-[60px] sm:max-w-[80px]">
             {author}
           </span>
         </div>
         <button
-          className="bg-white/80 rounded-full p-1 ml-2 z-[100]"
+          className="bg-white/80 rounded-full p-0.5 sm:p-1 ml-1 sm:ml-2 z-[100]"
           onClick={onMenu}
         >
           <svg
-            className="w-5 h-5 text-gray-400"
+            className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400"
             fill="currentColor"
             viewBox="0 0 20 20"
           >
@@ -108,11 +116,11 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
         </button>
         {/* Action menu with increased z-index */}
         {menuOpen && (
-          <div className="absolute right-0 bottom-10 bg-white border rounded shadow-lg p-2 text-sm z-[110]">
-            <div className="py-1 px-3 hover:bg-gray-100 cursor-pointer">
+          <div className="absolute right-0 bottom-8 sm:bottom-10 bg-white border rounded shadow-lg p-1 sm:p-2 text-xs sm:text-sm z-[110]">
+            <div className="py-1 px-2 sm:px-3 hover:bg-gray-100 cursor-pointer">
               Share
             </div>
-            <div className="py-1 px-3 hover:bg-gray-100 cursor-pointer">
+            <div className="py-1 px-2 sm:px-3 hover:bg-gray-100 cursor-pointer">
               Report
             </div>
           </div>
@@ -121,7 +129,7 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
     </div>
     {/* Title and info */}
     <div className="pt-2 pb-5 flex flex-col">
-      <h3 className="font-semibold text-base font-poppins text-gray-900 line-clamp-2 leading-none mb-4">
+      <h3 className="font-semibold text-base font-poppins text-gray-900 line-clamp-2 leading-none mb-4 min-h-[32px]">
         {title}
       </h3>
       <div className="flex items-center text-xs text-gray-700 space-x-2 mt-0 mb-0">

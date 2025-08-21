@@ -1,6 +1,6 @@
 export const recipes = [
   {
-    title: 'Marinated Tomato + Burrata Pizza',
+    title: 'Marinated Tomato + Burrata Pizza mamamia ulala',
     img: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=400&q=80',
     time: '30min',
     rating: 89,
@@ -10,7 +10,7 @@ export const recipes = [
     isBookmarked: false,
   },
   {
-    title: 'Spiced carrot & lentil soup',
+    title: 'Spiced ',
     img: 'https://images.unsplash.com/photo-1642821373475-cfd6c7301b18?q=80&w=1470',
     time: '25min',
     rating: 89,
@@ -31,6 +31,16 @@ export const recipes = [
   },
   {
     title: 'Zesty Italian Pasta Salad',
+    img: 'https://images.unsplash.com/photo-1502741338009-cac2772e18bc?auto=format&fit=crop&w=400&q=80',
+    time: '20min',
+    rating: 93,
+    ingredients: 15,
+    author: 'bitesofberi.com',
+    authorAvatar: 'https://randomuser.me/api/portraits/men/6.jpg',
+    isBookmarked: true,
+  },
+  {
+    title: 'Nasi Goreng',
     img: 'https://images.unsplash.com/photo-1502741338009-cac2772e18bc?auto=format&fit=crop&w=400&q=80',
     time: '20min',
     rating: 93,
