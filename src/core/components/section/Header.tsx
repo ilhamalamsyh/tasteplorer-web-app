@@ -1,10 +1,9 @@
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useNavigation } from '@/context/NavigationContext';
 import LoginModal from '@/features/auth/components/LoginModal';
-import { useRouter } from 'next/navigation';
 
 const Header: React.FC = () => {
   const { user, loading } = useAuth();
@@ -83,7 +82,7 @@ const Header: React.FC = () => {
           <div className="flex items-center">
             {!loading && user ? (
               <a href="/profile" onClick={handleProfileClick}>
-                {user.image ? (
+                {user.image && user.image.trim() !== '' ? (
                   <img
                     src={user.image}
                     alt="User Avatar"

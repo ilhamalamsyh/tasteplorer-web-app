@@ -61,7 +61,7 @@ const SingleFileDropZone: React.FC<SingleFileDropZoneProps> = ({
 
   return (
     <div className="my-4">
-      {imageUrl ? (
+      {imageUrl && imageUrl.trim() !== '' ? (
         <div className="flex flex-col items-center">
           <div className="w-48 h-48 bg-gray-100 rounded-lg overflow-hidden">
             <img

@@ -7,6 +7,7 @@ import TextField from '@/core/components/field/TextField';
 import { DatePicker } from '@/core/components/datepicker/DatePicker';
 import { format } from 'date-fns';
 import Snackbar from '@/core/components/snackbar/Snackbar';
+import AvatarUpload from './AvatarUpload';
 import {
   RegisterFormValues,
   registerInitialValues,
@@ -99,6 +100,17 @@ const RegisterForm: React.FC<RegisterFormProps> = ({
               </div>
 
               <form onSubmit={formik.handleSubmit} className="space-y-6">
+                {/* Avatar Upload Component */}
+                <AvatarUpload
+                  onImageUpload={(imageUrl) => {
+                    formik.setFieldValue('image', imageUrl);
+                  }}
+                  onUploadError={(error) => {
+                    showError(error);
+                  }}
+                  initialImageUrl={formik.values.image}
+                />
+
                 <TextField
                   name="fullname"
                   type="text"

@@ -12,6 +12,7 @@ export interface RegisterFormValues {
   password: string;
   birthdate: Date | null;
   allowFutureDates: boolean; // Default: No future dates allowed
+  image?: string; // Optional field for profile image URL
 }
 
 export const loginInitialValues: LoginFormValues = {

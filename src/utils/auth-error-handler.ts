@@ -23,30 +23,52 @@ export const formatAuthErrorMessage = (error: string): string => {
     return 'Too many login attempts. Please try again later.';
   }
 
-  // Registration specific errors
+  // Registration specific errors - Enhanced
   if (
     message.includes('email already exists') ||
-    (message.includes('email') && message.includes('taken'))
+    (message.includes('email') && message.includes('already')) ||
+    (message.includes('duplicate') && message.includes('email'))
   ) {
-    return 'This email is already registered. Please use a different email.';
+    return 'This email is already registered. Please use a different email address.';
   }
 
   if (
     message.includes('username already exists') ||
-    (message.includes('username') && message.includes('taken'))
+    (message.includes('username') && message.includes('already')) ||
+    (message.includes('duplicate') && message.includes('username'))
   ) {
     return 'This username is already taken. Please choose a different username.';
   }
 
-  if (message.includes('invalid email') || message.includes('email format')) {
+  if (
+    message.includes('invalid email') ||
+    message.includes('email format') ||
+    message.includes('email is not valid')
+  ) {
     return 'Please enter a valid email address.';
   }
 
   if (
     message.includes('password too short') ||
-    message.includes('weak password')
+    message.includes('weak password') ||
+    message.includes('password must be')
   ) {
-    return 'Password is too weak. Please use a stronger password.';
+    return 'Password must be at least 10 characters long. Please use a stronger password.';
+  }
+
+  if (
+    message.includes('username too short') ||
+    message.includes('username must be')
+  ) {
+    return 'Username must be at least 8 characters long.';
+  }
+
+  if (message.includes('fullname') && message.includes('required')) {
+    return 'Full name is required. Please enter your full name.';
+  }
+
+  if (message.includes('birthdate') || message.includes('birth date')) {
+    return 'Please enter a valid birth date.';
   }
 
   // Network and server errors
@@ -64,6 +86,14 @@ export const formatAuthErrorMessage = (error: string): string => {
     (message.includes('expired') || message.includes('invalid'))
   ) {
     return 'Your session has expired. Please login again.';
+  }
+
+  // Validation errors
+  if (
+    message.includes('validation failed') ||
+    message.includes('invalid input')
+  ) {
+    return 'Please check your input and try again.';
   }
 
   // Default case - return original message if no specific pattern matches

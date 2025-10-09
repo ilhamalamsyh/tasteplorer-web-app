@@ -104,6 +104,8 @@ export const useHandleRegister = (setError: (error: string) => void) => {
             username: values.username.trim(),
             password: values.password,
             birthDate: formattedDate,
+            // Add image field if available from form (optional for now)
+            ...(values.image && { image: values.image }),
           },
         },
       });
@@ -122,12 +124,21 @@ export const useHandleRegister = (setError: (error: string) => void) => {
           '✅ Registration successful for user:',
           data.register.user.username
         );
+        console.log('📋 User details:', {
+          id: data.register.user.id,
+          fullname: data.register.user.fullname,
+          email: data.register.user.email,
+          username: data.register.user.username,
+          birthDate: data.register.user.birthDate,
+          image: data.register.user.image,
+          createdAt: data.register.user.createdAt,
+        });
 
         // Save authentication data
         register(data.register.user, data.register.token);
         actions.resetForm();
 
-        console.log('💾 User data saved to localStorage');
+        console.log('💾 User data and token saved to localStorage');
         return true;
       } else {
         console.error('❌ Invalid response structure:', data);
