@@ -7,11 +7,17 @@ const FeedSidebar: React.FC = () => {
     <aside className="flex flex-col gap-6">
       {/* Profile Card */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col items-center">
-        <img
-          src={profile.avatar}
-          alt={profile.name}
-          className="w-16 h-16 rounded-full object-cover mb-2"
-        />
+        {profile.avatar && profile.avatar.trim() !== '' ? (
+          <img
+            src={profile.avatar}
+            alt={profile.name}
+            className="w-16 h-16 rounded-full object-cover mb-2"
+          />
+        ) : (
+          <div className="w-16 h-16 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 font-bold text-xl mb-2">
+            {profile.name.charAt(0).toUpperCase()}
+          </div>
+        )}
         <div className="font-semibold text-gray-900 text-xl">
           {profile.name}
         </div>
@@ -28,11 +34,17 @@ const FeedSidebar: React.FC = () => {
         <ul className="flex flex-col gap-2">
           {myCommunities.map((c) => (
             <li key={c.name} className="flex items-center gap-2">
-              <img
-                src={c.avatar}
-                alt={c.name}
-                className="w-6 h-6 rounded-full"
-              />
+              {c.avatar && c.avatar.trim() !== '' ? (
+                <img
+                  src={c.avatar}
+                  alt={c.name}
+                  className="w-6 h-6 rounded-full"
+                />
+              ) : (
+                <div className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 font-bold text-xs">
+                  {c.name.charAt(0).toUpperCase()}
+                </div>
+              )}
               <span className="text-base text-gray-700 font-medium truncate">
                 {c.name}
               </span>
@@ -48,11 +60,17 @@ const FeedSidebar: React.FC = () => {
         <ul className="flex flex-col gap-2">
           {recommendedCommunities.map((c) => (
             <li key={c.name} className="flex items-center gap-2">
-              <img
-                src={c.avatar}
-                alt={c.name}
-                className="w-6 h-6 rounded-full"
-              />
+              {c.avatar && c.avatar.trim() !== '' ? (
+                <img
+                  src={c.avatar}
+                  alt={c.name}
+                  className="w-6 h-6 rounded-full"
+                />
+              ) : (
+                <div className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 font-bold text-xs">
+                  {c.name.charAt(0).toUpperCase()}
+                </div>
+              )}
               <div className="flex flex-col">
                 <span className="text-base text-gray-700 font-medium truncate">
                   {c.name}

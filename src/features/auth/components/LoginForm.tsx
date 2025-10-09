@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import React from 'react';
@@ -47,11 +44,16 @@ const LoginForm: React.FC<LoginFormProps> = ({
     actions: FormikHelpers<LoginFormValues>
   ) => {
     try {
-      await handleLogin(values, actions);
-      onLoginSuccess();
+      const isLoginSuccessful = await handleLogin(values, actions);
+      // Only redirect if login was successful
+      if (isLoginSuccessful) {
+        onLoginSuccess();
+      }
+      // If login failed, the error will be shown in the snackbar
     } catch (error) {
       // Error is already handled by useHandleLogin
       console.error('Login failed:', error);
+      // Don't redirect on error - let the user see the error message
     }
   };
 

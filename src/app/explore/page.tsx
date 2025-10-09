@@ -85,11 +85,17 @@ const ExplorePage = () => {
               key={creator.name}
               className="flex flex-col items-center min-w-[130px] bg-white rounded-xl shadow-sm p-5 hover:bg-primary hover:text-white transition cursor-pointer border border-gray-100"
             >
-              <img
-                src={creator.avatar}
-                alt={creator.name}
-                className="w-16 h-16 rounded-full mb-2 object-cover"
-              />
+              {creator.avatar && creator.avatar.trim() !== '' ? (
+                <img
+                  src={creator.avatar}
+                  alt={creator.name}
+                  className="w-16 h-16 rounded-full mb-2 object-cover"
+                />
+              ) : (
+                <div className="w-16 h-16 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 font-bold text-lg mb-2">
+                  {creator.name.charAt(0).toUpperCase()}
+                </div>
+              )}
               <span className="font-semibold text-center">{creator.name}</span>
             </div>
           ))}

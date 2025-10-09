@@ -38,13 +38,19 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
   >
     {/* Image with badge, bookmark, author, and menu */}
     <div className="relative w-full aspect-[4/6] overflow-hidden rounded-lg">
-      <Image
-        src={img}
-        alt={title}
-        fill
-        sizes="(max-width: 640px) 160px, (max-width: 768px) 180px, (max-width: 1024px) 200px, 220px"
-        className="object-cover rounded-lg transition-transform duration-300 hover:scale-110"
-      />
+      {img && img.trim() !== '' ? (
+        <Image
+          src={img}
+          alt={title}
+          fill
+          sizes="(max-width: 640px) 160px, (max-width: 768px) 180px, (max-width: 1024px) 200px, 220px"
+          className="object-cover rounded-lg transition-transform duration-300 hover:scale-110"
+        />
+      ) : (
+        <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400">
+          <span className="text-sm">No Image</span>
+        </div>
+      )}
       {/* Rating badge with increased z-index */}
       <div className="absolute top-2 left-2 bg-white/90 rounded-full px-2 py-1 flex items-center text-xs font-bold text-gray-800 shadow z-[100]">
         <svg
@@ -89,12 +95,18 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
       <div className="absolute left-0 right-0 bottom-0 px-2 sm:px-3 pb-2 sm:pb-3 flex items-center justify-between z-[100] bg-gradient-to-t from-black/60 to-transparent rounded-lg">
         <div className="flex items-center space-x-1 sm:space-x-2 bg-white/80 rounded-full px-1.5 sm:px-2 py-1">
           <div className="relative w-5 h-5 sm:w-6 sm:h-6">
-            <Image
-              src={authorAvatar}
-              alt={author}
-              fill
-              className="rounded-full object-cover"
-            />
+            {authorAvatar && authorAvatar.trim() !== '' ? (
+              <Image
+                src={authorAvatar}
+                alt={author}
+                fill
+                className="rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full bg-gray-300 rounded-full flex items-center justify-center text-gray-600 font-bold text-xs">
+                {author.charAt(0).toUpperCase()}
+              </div>
+            )}
           </div>
           <span className="text-[10px] sm:text-xs font-medium text-gray-700 truncate max-w-[60px] sm:max-w-[80px]">
             {author}

@@ -28,11 +28,17 @@ const FeedPostCard: React.FC<FeedPostCardProps> = ({ post }) => {
       {/* Header */}
       <div className="flex items-center justify-between px-5 pt-5 pb-2">
         <div className="flex items-center gap-3">
-          <img
-            src={post.user.avatar}
-            alt={post.user.name}
-            className="w-10 h-10 rounded-full object-cover"
-          />
+          {post.user.avatar && post.user.avatar.trim() !== '' ? (
+            <img
+              src={post.user.avatar}
+              alt={post.user.name}
+              className="w-10 h-10 rounded-full object-cover"
+            />
+          ) : (
+            <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 font-bold">
+              {post.user.name.charAt(0).toUpperCase()}
+            </div>
+          )}
           <div>
             <div className="flex items-center gap-2">
               <span className="font-semibold text-gray-900 text-base">
@@ -41,11 +47,17 @@ const FeedPostCard: React.FC<FeedPostCardProps> = ({ post }) => {
               <span className="text-sm text-gray-400">· {post.time}</span>
             </div>
             <div className="flex items-center gap-1 mt-0.5">
-              <img
-                src={post.community.avatar}
-                alt={post.community.name}
-                className="w-4 h-4 rounded-full"
-              />
+              {post.community.avatar && post.community.avatar.trim() !== '' ? (
+                <img
+                  src={post.community.avatar}
+                  alt={post.community.name}
+                  className="w-4 h-4 rounded-full"
+                />
+              ) : (
+                <div className="w-4 h-4 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 font-bold text-xs">
+                  {post.community.name.charAt(0).toUpperCase()}
+                </div>
+              )}
               <span className="text-sm text-gray-500">
                 {post.community.name}
               </span>
@@ -58,11 +70,17 @@ const FeedPostCard: React.FC<FeedPostCardProps> = ({ post }) => {
       </div>
       {/* Image */}
       <div className="w-full aspect-[4/3] bg-gray-100 overflow-hidden">
-        <img
-          src={post.image}
-          alt="Post"
-          className="w-full h-full object-cover transition-transform duration-200 hover:scale-105"
-        />
+        {post.image && post.image.trim() !== '' ? (
+          <img
+            src={post.image}
+            alt="Post"
+            className="w-full h-full object-cover transition-transform duration-200 hover:scale-105"
+          />
+        ) : (
+          <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400">
+            <span className="text-sm">No Image Available</span>
+          </div>
+        )}
       </div>
       {/* Text */}
       <div className="px-5 pt-3 pb-1">
@@ -75,11 +93,17 @@ const FeedPostCard: React.FC<FeedPostCardProps> = ({ post }) => {
         rel="noopener noreferrer"
         className="flex items-center gap-3 bg-gray-50 rounded-xl mx-5 my-2 px-3 py-2 hover:bg-gray-100 transition"
       >
-        <img
-          src={post.source.image}
-          alt={post.source.title}
-          className="w-8 h-8 rounded-lg object-cover"
-        />
+        {post.source.image && post.source.image.trim() !== '' ? (
+          <img
+            src={post.source.image}
+            alt={post.source.title}
+            className="w-8 h-8 rounded-lg object-cover"
+          />
+        ) : (
+          <div className="w-8 h-8 rounded-lg bg-gray-300 flex items-center justify-center text-gray-600 font-bold text-xs">
+            {post.source.title.charAt(0).toUpperCase()}
+          </div>
+        )}
         <span className="font-medium text-sm text-gray-700 truncate">
           {post.source.title}
         </span>

@@ -37,3 +37,12 @@ export const REGISTER_MUTATION = gql`
     }
   }
 `;
+
+export const UPLOAD_SINGLE_FILE = gql`
+  mutation UploadSingleFile($file: Upload!, $setting: UploadParamInput!) {
+    uploadSingleFile(file: $file, setting: $setting) {
+      imageUrl
+      isSuccess
+    }
+  }
+`;

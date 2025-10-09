@@ -16,16 +16,13 @@ export const Avatar: React.FC<AvatarProps> = ({ imageUrl, fullName }) => {
       .join('')
       .toUpperCase();
   };
-  const shouldShowInitials =
-    !imageUrl || imageUrl.trim() === '' || isImageError;
+
+  // More robust check for valid image URL
+  const hasValidImageUrl = imageUrl && imageUrl.trim() !== '' && !isImageError;
 
   return (
     <div className="w-24 h-24 bg-orange-500 rounded-full mx-auto mb-4 flex items-center justify-center overflow-hidden">
-      {shouldShowInitials ? (
-        <span className="text-white text-3xl font-bold">
-          {getInitials(fullName)}
-        </span>
-      ) : (
+      {hasValidImageUrl ? (
         <Image
           src={imageUrl}
           alt="Profile"
@@ -34,6 +31,10 @@ export const Avatar: React.FC<AvatarProps> = ({ imageUrl, fullName }) => {
           className="object-cover w-full h-full"
           onError={() => setIsImageError(true)} // Handle broken images
         />
+      ) : (
+        <span className="text-white text-3xl font-bold">
+          {getInitials(fullName)}
+        </span>
       )}
     </div>
   );

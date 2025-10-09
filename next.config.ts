@@ -8,6 +8,7 @@ const nextConfig: NextConfig = {
       'images.unsplash.com',
       'randomuser.me',
       'global-web-assets.cpcdn.com',
+      'res.cloudinary.com', // Added Cloudinary domain for uploaded images
     ],
   },
 };
