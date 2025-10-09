@@ -21,6 +21,7 @@ import { decodeJWT } from '@/utils/jwt/jwt_util';
 import { useQuery } from '@apollo/client';
 import { CURRENT_USER } from '../services/query';
 import { useRouter } from 'next/navigation';
+import Snackbar from '@/core/components/snackbar/Snackbar';
 
 // Define the type for the form values
 
@@ -56,8 +57,36 @@ const EditUserForm = () => {
     }
   }, [data]);
 
+  // Handle token expired error
+  useEffect(() => {
+    if (queryError) {
+      const errorMessage = queryError.message.toLowerCase();
+      if (
+        errorMessage.includes('token') &&
+        (errorMessage.includes('expired') ||
+          errorMessage.includes('invalid') ||
+          errorMessage.includes('unauthorized'))
+      ) {
+        // Remove token and user from localStorage
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+
+        // Show snackbar message
+        showError('Token expired. Please login again.');
+
+        // Redirect to home page after a short delay
+        setTimeout(() => {
+          router.push('/');
+        }, 2000);
+
+        return;
+      }
+    }
+  }, [queryError, showError, router]);
+
   if (loading) return <p>Loading...</p>;
-  if (error) return <p>Error...</p>;
+  if (queryError && !queryError.message.toLowerCase().includes('token'))
+    return <p>Error...</p>;
 
   return (
     <FormikWrapper<EditUserFormValues>
@@ -179,6 +208,13 @@ const EditUserForm = () => {
                 </div>
               )}
             </div>
+
+            {/* Snackbar for error messages */}
+            <Snackbar
+              variant="error"
+              message={error}
+              onClose={handleCloseSnackbar}
+            />
           </div>
         );
       }}

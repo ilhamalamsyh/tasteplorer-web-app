@@ -10,12 +10,12 @@ import {
 } from 'react';
 
 interface User {
-  id: number;
+  id: string;
   email: string;
   fullname: string;
-  gender: string;
+  username: string;
   birthDate: string;
-  image: string;
+  image: string | null;
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
@@ -43,41 +43,63 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const router = useRouter();
 
   useEffect(() => {
-    // Load user from localstorage
-    const storedUser = localStorage.getItem('user');
-    const storedToken = localStorage.getItem('token');
+    try {
+      // Load user from localStorage
+      const storedUser = localStorage.getItem('user');
+      const storedToken = localStorage.getItem('token');
 
-    if (storedUser && storedToken) {
-      setUser(JSON.parse(storedUser));
-      setToken(storedToken);
+      if (storedUser && storedToken) {
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
+        setToken(storedToken);
+      }
+    } catch (error) {
+      console.error('Error loading user from localStorage:', error);
+      // Clear corrupted data
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   }, []);
 
   const login = (userData: User, userToken: string) => {
-    localStorage.setItem('user', JSON.stringify(userData));
-    localStorage.setItem('token', userToken);
+    try {
+      localStorage.setItem('user', JSON.stringify(userData));
+      localStorage.setItem('token', userToken);
 
-    setUser(userData);
-    setToken(userToken);
+      setUser(userData);
+      setToken(userToken);
+    } catch (error) {
+      console.error('Error saving user to localStorage:', error);
+      throw new Error('Failed to save user data');
+    }
   };
 
   const register = (userData: User, userToken: string) => {
-    localStorage.setItem('user', JSON.stringify(userData));
-    localStorage.setItem('token', userToken);
+    try {
+      localStorage.setItem('user', JSON.stringify(userData));
+      localStorage.setItem('token', userToken);
 
-    setUser(userData);
-    setToken(userToken);
+      setUser(userData);
+      setToken(userToken);
+    } catch (error) {
+      console.error('Error saving user to localStorage:', error);
+      throw new Error('Failed to save user data');
+    }
   };
 
   const logout = () => {
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
-    setUser(null);
-    setToken(null);
+    try {
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
+      setUser(null);
+      setToken(null);
 
-    router.push('/login');
+      router.push('/');
+    } catch (error) {
+      console.error('Error during logout:', error);
+    }
   };
 
   return (

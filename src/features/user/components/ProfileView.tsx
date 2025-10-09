@@ -1,6 +1,6 @@
 'use client'; // Add this line
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -9,14 +9,49 @@ import { CURRENT_USER } from '../services/query';
 import { client } from '@/lib/apollo-client';
 import { Avatar } from '@/core/components/image/Avatar';
 import RecipeCard from '@/core/components/RecipeCard/RecipeCard';
+import useSnackbar from '@/core/hooks/useSnackbar';
+import Snackbar from '@/core/components/snackbar/Snackbar';
 
 export const ProfileView = () => {
   const router = useRouter();
   const { loading, error, data } = useQuery(CURRENT_USER, { client });
   const [openMenuIndex, setOpenMenuIndex] = useState<number | null>(null);
+  const {
+    error: snackbarError,
+    showError,
+    handleCloseSnackbar,
+  } = useSnackbar();
+
+  // Handle token expired error
+  useEffect(() => {
+    if (error) {
+      const errorMessage = error.message.toLowerCase();
+      if (
+        errorMessage.includes('token') &&
+        (errorMessage.includes('expired') ||
+          errorMessage.includes('invalid') ||
+          errorMessage.includes('unauthorized'))
+      ) {
+        // Remove token and user from localStorage
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+
+        // Show snackbar message
+        showError('Token expired. Please login again.');
+
+        // Redirect to home page after a short delay
+        setTimeout(() => {
+          router.push('/');
+        }, 2000);
+
+        return;
+      }
+    }
+  }, [error, showError, router]);
 
   if (loading) return <p>Loading...</p>;
-  if (error) return <p>Error: {error.message}</p>;
+  if (error && !error.message.toLowerCase().includes('token'))
+    return <p>Error: {error.message}</p>;
 
   const { username, fullname, image } = data.currentUser;
 
@@ -120,6 +155,13 @@ export const ProfileView = () => {
           </>
         )}
       </div>
+
+      {/* Snackbar for error messages */}
+      <Snackbar
+        variant="error"
+        message={snackbarError}
+        onClose={handleCloseSnackbar}
+      />
     </div>
   );
 };
