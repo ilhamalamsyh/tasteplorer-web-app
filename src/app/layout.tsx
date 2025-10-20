@@ -22,7 +22,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Tasteplorer</title>
       </head>
-      <body className="h-full font-inter scrollbar-hide">
+      <body className="h-full font-inter scrollbar-hide bg-[#f6f6f6]">
         <Providers>
           <ClientLayout>{children}</ClientLayout>
         </Providers>
