@@ -16,7 +16,7 @@ interface IngredientsListProps {
 
 const IngredientsList: React.FC<IngredientsListProps> = ({
   ingredients,
-  title = 'Ingredientsx',
+  title = 'Ingredients',
   className = '',
 }) => {
   return (

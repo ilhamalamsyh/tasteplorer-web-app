@@ -30,6 +30,14 @@ const RecipeHero: React.FC<RecipeHeroProps> = ({
   authorAvatar,
 }) => {
   const [isMobile, setIsMobile] = useState(false);
+  const [showFullSubtitle, setShowFullSubtitle] = useState(false);
+  const isSubtitleLong = subtitle && subtitle.split(' ').length > 20; // simple check, adjust as needed
+
+  // Helper to clamp subtitle to N chars and add '... More' if needed
+  const clampSubtitle = (text: string, maxChars = 120) => {
+    if (text.length <= maxChars) return text;
+    return text.slice(0, maxChars).replace(/\s+$/, '') + '...';
+  };
 
   useEffect(() => {
     const checkScreenSize = () => {
@@ -104,9 +112,36 @@ const RecipeHero: React.FC<RecipeHeroProps> = ({
               {title}
             </h1>
             {subtitle && (
-              <p className="text-base sm:text-lg md:text-xl text-gray-600 dark:text-gray-300 leading-relaxed w-full">
-                {subtitle}
-              </p>
+              <>
+                <div className="relative w-full">
+                  {!showFullSubtitle && isSubtitleLong ? (
+                    <span className="text-base sm:text-lg md:text-xl text-gray-600 dark:text-gray-300 leading-relaxed w-full">
+                      {clampSubtitle(subtitle)}{' '}
+                      <button
+                        className="font-semibold text-sm focus:outline-none"
+                        style={{ color: '#233748' }}
+                        onClick={() => setShowFullSubtitle(true)}
+                        tabIndex={0}
+                      >
+                        more
+                      </button>
+                    </span>
+                  ) : (
+                    <span className="text-base sm:text-lg md:text-xl text-gray-600 dark:text-gray-300 leading-relaxed w-full">
+                      {subtitle}
+                      {isSubtitleLong && (
+                        <button
+                          className="font-semibold text-sm focus:outline-none"
+                          style={{ color: '#233748' }}
+                          onClick={() => setShowFullSubtitle(false)}
+                        >
+                          show less
+                        </button>
+                      )}
+                    </span>
+                  )}
+                </div>
+              </>
             )}
           </div>
 
@@ -155,7 +190,7 @@ const RecipeHero: React.FC<RecipeHeroProps> = ({
           </div>
 
           {/* Meta Information */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 p-3 sm:p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg mb-4 md:mb-6 w-full">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 p-2 sm:p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg mb-4 md:mb-6 w-full">
             <div className="text-center">
               <div className="flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 bg-primary/10 rounded-full mb-1 sm:mb-2 mx-auto">
                 <svg

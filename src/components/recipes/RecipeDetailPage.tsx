@@ -89,8 +89,8 @@ const RecipeDetailPage: React.FC<RecipeDetailPageProps> = ({
   };
 
   return (
-    <div className={`min-h-screen w-full ${className}`}>
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className={`w-full min-h-screen ${className}`}>
+      <div className="w-full max-w-5xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8 py-8">
         {/* Hero Section */}
         <RecipeHero
           title={recipe.title}
@@ -144,29 +144,6 @@ const RecipeDetailPage: React.FC<RecipeDetailPageProps> = ({
             />
           </div>
         )}
-
-        {/* Back to Top Button */}
-        <div className="fixed bottom-8 right-8">
-          <button
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            className="p-3 bg-primary text-white rounded-full shadow-lg hover:bg-primary/90 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/50"
-            aria-label="Back to top"
-          >
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M5 10l7-7m0 0l7 7m-7-7v18"
-              />
-            </svg>
-          </button>
-        </div>
       </div>
     </div>
   );

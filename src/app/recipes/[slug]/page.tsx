@@ -26,7 +26,7 @@ const mockRecipeData = (baseRecipe: any, slug: string): Recipe => {
   return {
     id: slug,
     title: baseRecipe.title,
-    subtitle: `A delicious ${baseRecipe.title.toLowerCase()} recipe that will amaze your taste buds`,
+    subtitle: `A delicious ${baseRecipe.title.toLowerCase()} recipe that will amaze your taste buds. A delicious ${baseRecipe.title.toLowerCase()} recipe that will amaze your taste buds. A delicious ${baseRecipe.title.toLowerCase()} recipe that will amaze your taste buds. A delicious ${baseRecipe.title.toLowerCase()} recipe that will amaze your taste buds. A delicious ${baseRecipe.title.toLowerCase()} recipe that will amaze your taste buds. A delicious ${baseRecipe.title.toLowerCase()} recipe that will amaze your taste buds. A delicious ${baseRecipe.title.toLowerCase()} recipe that will amaze your taste buds. A delicious ${baseRecipe.title.toLowerCase()} recipe that will amaze your taste buds. A delicious ${baseRecipe.title.toLowerCase()} recipe that will amaze your taste buds. A delicious ${baseRecipe.title.toLowerCase()} recipe that will amaze your taste buds. `,
     imageUrl: baseRecipe.img,
     prepTime: '15 mins',
     cookTime: baseRecipe.time,
