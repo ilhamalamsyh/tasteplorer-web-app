@@ -123,6 +123,7 @@ const ExplorePage = () => {
           onBookmark={handleBookmark}
           onMenu={handleMenu}
           openMenuIndex={openMenuIndex}
+          sectionTitle="Discover recipes"
         />
       </div>
     </main>

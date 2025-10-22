@@ -20,11 +20,14 @@ interface FeedPostCardProps {
     bookmarked: boolean;
     comments: number;
   };
+  className?: string;
 }
 
-const FeedPostCard: React.FC<FeedPostCardProps> = ({ post }) => {
+const FeedPostCard: React.FC<FeedPostCardProps> = ({ post, className }) => {
   return (
-    <article className="bg-white rounded-2xl shadow-sm border border-gray-100 p-0 overflow-hidden">
+    <article
+      className={`bg-white rounded-3xl p-0 overflow-hidden ${className}`}
+    >
       {/* Header */}
       <div className="flex items-center justify-between px-5 pt-5 pb-2">
         <div className="flex items-center gap-3">

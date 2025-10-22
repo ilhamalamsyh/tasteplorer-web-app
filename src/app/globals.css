@@ -19,3 +19,15 @@ body {
   background: var(--background);
   font-family: 'Inter', sans-serif;
 }
+
+/* Pastikan bullet muncul dan berwarna primary */
+.ingredients-list-primary {
+  list-style-type: disc !important;
+  padding-left: 1.5rem;
+}
+.ingredients-list-primary li {
+  display: list-item !important;
+}
+.ingredients-list-primary li::marker {
+  color: #ff670e !important;
+}

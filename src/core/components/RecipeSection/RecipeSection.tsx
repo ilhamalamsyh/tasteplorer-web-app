@@ -19,6 +19,7 @@ interface RecipeSectionProps {
   onBookmark: (idx: number, e: React.MouseEvent) => void;
   onMenu: (idx: number, e: React.MouseEvent) => void;
   openMenuIndex: number | null;
+  sectionTitle?: string;
 }
 
 const RecipeSection: React.FC<RecipeSectionProps> = ({
@@ -27,20 +28,21 @@ const RecipeSection: React.FC<RecipeSectionProps> = ({
   onBookmark,
   onMenu,
   openMenuIndex,
+  sectionTitle = 'Discover recipes',
 }) => (
-  <section className="px-4 md:px-0 bg-white py-10 max-w-5xl mx-auto">
-    <div className="flex items-center justify-between mb-0">
+  <section
+    className="px-4 md:px-0 bg-white py-10 max-w-5xl mx-auto"
+    style={{ borderRadius: 20, overflow: 'hidden' }}
+  >
+    <div className="flex items-center justify-between mb-0 px-2">
       <h2 className="text-2xl font-semibold font-poppins text-gray-800 text-left">
-        Discover recipes
+        {sectionTitle}
       </h2>
-      <a
-        href="#"
-        className="text-sm text-gray-400 font-semibold hover:underline"
-      >
+      <a href="#" className="text-sm text-gray-400 font-semibold">
         See All
       </a>
     </div>
-    <p className="text-gray-500 text-sm mb-2">
+    <p className="text-gray-500 text-sm mb-2 px-2">
       Find and share everyday cooking inspiration with ratings and reviews you
       can trust. Recipes for easy dinners, healthy eating, fast and cheap,
       kid-friendly, and more.
