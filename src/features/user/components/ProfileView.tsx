@@ -14,7 +14,10 @@ import Snackbar from '@/core/components/snackbar/Snackbar';
 
 export const ProfileView = () => {
   const router = useRouter();
-  const { loading, error, data } = useQuery(CURRENT_USER, { client });
+  const { loading, error, data } = useQuery(CURRENT_USER, {
+    client,
+    fetchPolicy: 'network-only',
+  });
   const [openMenuIndex, setOpenMenuIndex] = useState<number | null>(null);
   const {
     error: snackbarError,

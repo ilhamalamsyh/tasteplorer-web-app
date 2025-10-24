@@ -22,6 +22,7 @@ import { useQuery } from '@apollo/client';
 import { CURRENT_USER } from '../services/query';
 import { useRouter } from 'next/navigation';
 import Snackbar from '@/core/components/snackbar/Snackbar';
+import AvatarUpload from '@/core/components/avatar/AvatarUpload';
 
 // Define the type for the form values
 
@@ -44,6 +45,8 @@ const EditUserForm = () => {
       setUserId(decoded?.sub ? parseInt(decoded.sub, 10) : null);
     }
 
+    console.log('currentUserData: ', data?.currentUser?.image);
+
     if (data?.currentUser) {
       setInitialValues((prev) => ({
         ...prev,
@@ -53,6 +56,7 @@ const EditUserForm = () => {
         birthdate: data.currentUser.birthDate
           ? new Date(data.currentUser.birthDate)
           : prev.birthdate,
+        image: data.currentUser.image || prev.image,
       }));
     }
   }, [data]);
@@ -113,14 +117,15 @@ const EditUserForm = () => {
                 Edit Profile
               </h2>
               <form onSubmit={formik.handleSubmit}>
-                <div className="mt-4">
-                  <SingleFileDropZone
-                    name="image"
-                    maxFiles={1}
-                    isMultiple={false}
-                    maxSize={2 * 1024 * 1024}
-                  />
-                </div>
+                <AvatarUpload
+                  onImageUpload={(imageUrl) => {
+                    formik.setFieldValue('image', imageUrl);
+                  }}
+                  onUploadError={(error) => {
+                    showError(error);
+                  }}
+                  initialImageUrl={formik.values.image}
+                />
                 <TextField
                   name="fullname"
                   type="text"

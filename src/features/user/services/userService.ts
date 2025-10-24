@@ -30,12 +30,26 @@ export const useHandleEditUser = (
             email: values.email,
             username: values.username,
             birthDate: formattedDate,
+            image: values.image,
           },
         },
       });
 
-      if (data) {
-        // actions.resetForm();
+      if (data && data.updateUser) {
+        // Update user in localStorage
+        const updatedUser = {
+          id: data.updateUser.id,
+          email: data.updateUser.email,
+          fullname: data.updateUser.fullname,
+          username: data.updateUser.username,
+          birthDate: data.updateUser.birthDate,
+          image: data.updateUser.image,
+          createdAt: data.updateUser.createdAt,
+          updatedAt: data.updateUser.updatedAt,
+          deletedAt: data.updateUser.deletedAt ?? null,
+          __typename: data.updateUser.__typename,
+        };
+        localStorage.setItem('user', JSON.stringify(updatedUser));
         router.back();
       }
     } catch (error) {

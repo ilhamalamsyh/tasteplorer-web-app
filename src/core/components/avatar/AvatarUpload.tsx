@@ -19,6 +19,11 @@ const AvatarUpload: React.FC<AvatarUploadProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { uploadImage, uploading, uploadError } = useImageUpload();
 
+  // Sync previewUrl with initialImageUrl if it changes (for async API data)
+  React.useEffect(() => {
+    setPreviewUrl(initialImageUrl || null);
+  }, [initialImageUrl]);
+
   const handleFileSelect = async (file: File) => {
     if (!file) return;
 

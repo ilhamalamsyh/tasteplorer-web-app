@@ -7,7 +7,7 @@ import TextField from '@/core/components/field/TextField';
 import { DatePicker } from '@/core/components/datepicker/DatePicker';
 import { format } from 'date-fns';
 import Snackbar from '@/core/components/snackbar/Snackbar';
-import AvatarUpload from './AvatarUpload';
+import AvatarUpload from '../../../core/components/avatar/AvatarUpload';
 import {
   RegisterFormValues,
   registerInitialValues,
