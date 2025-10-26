@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
+import { Avatar } from '@/core/components/image/Avatar';
 
 interface RecipeHeroProps {
   title: string;
@@ -73,7 +74,7 @@ const RecipeHero: React.FC<RecipeHeroProps> = ({
           }
         >
           <img
-            src={imageUrl}
+            src={imageUrl || '/images/broken-image.png'}
             alt={title}
             className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 hover:scale-105 rounded-xl"
             style={{
@@ -87,8 +88,7 @@ const RecipeHero: React.FC<RecipeHeroProps> = ({
             }}
             onLoad={() => console.log('Image loaded successfully:', imageUrl)}
             onError={(e) => {
-              console.error('Image failed to load:', imageUrl);
-              e.currentTarget.src = '/placeholder-recipe.jpg'; // fallback to placeholder
+              e.currentTarget.src = '/images/broken-image.png';
             }}
           />
 
@@ -171,17 +171,13 @@ const RecipeHero: React.FC<RecipeHeroProps> = ({
 
             {authorName && (
               <div className="flex items-center gap-2">
-                {authorAvatar && (
-                  <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full overflow-hidden">
-                    <Image
-                      src={authorAvatar}
-                      alt={authorName}
-                      width={32}
-                      height={32}
-                      className="object-cover"
-                    />
-                  </div>
-                )}
+                <Avatar
+                  imageUrl={
+                    'https://i.pinimg.com/736x/d3/51/84/d351847348dd0dabeac308be8e2bb072.jpg'
+                  }
+                  fullName={authorName}
+                  className="w-8 h-8"
+                />
                 <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                   by {authorName}
                 </span>

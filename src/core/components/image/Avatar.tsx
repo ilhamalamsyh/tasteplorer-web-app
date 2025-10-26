@@ -4,9 +4,14 @@ import { useState } from 'react';
 interface AvatarProps {
   imageUrl?: string;
   fullName: string;
+  className?: string;
 }
 
-export const Avatar: React.FC<AvatarProps> = ({ imageUrl, fullName }) => {
+export const Avatar: React.FC<AvatarProps> = ({
+  imageUrl,
+  fullName,
+  className,
+}) => {
   const [isImageError, setIsImageError] = useState(false);
 
   const getInitials = (name: string) => {
@@ -21,7 +26,11 @@ export const Avatar: React.FC<AvatarProps> = ({ imageUrl, fullName }) => {
   const hasValidImageUrl = imageUrl && imageUrl.trim() !== '' && !isImageError;
 
   return (
-    <div className="w-24 h-24 bg-orange-500 rounded-full mx-auto mb-4 flex items-center justify-center overflow-hidden">
+    <div
+      className={`bg-orange-500 rounded-full flex items-center justify-center overflow-hidden ${
+        className || ''
+      }`}
+    >
       {hasValidImageUrl ? (
         <Image
           src={imageUrl}
