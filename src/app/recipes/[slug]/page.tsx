@@ -37,7 +37,25 @@ export default function RecipeDetailPage({ params }: RecipeDetailPageProps) {
     return <RecipeDetailSkeleton />;
   }
   if (error || !data?.recipeDetail) {
-    notFound();
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
+        <img
+          src="/images/broken-image.png"
+          alt="Not found"
+          className="w-32 h-32 mb-6 opacity-60"
+        />
+        <h2 className="text-2xl font-bold mb-2 text-gray-700">
+          Recipe Not Found
+        </h2>
+        <p className="text-gray-500 mb-4">
+          Sorry, the recipe you are looking for does not exist or has been
+          removed.
+        </p>
+        <a href="/explore" className="text-primary font-semibold">
+          Back to Explore
+        </a>
+      </div>
+    );
   }
 
   // Map API response to Recipe type
