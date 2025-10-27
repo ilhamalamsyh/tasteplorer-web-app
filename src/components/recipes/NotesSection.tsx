@@ -262,10 +262,10 @@ const NotesSection: React.FC<NotesSectionProps> = ({
         {/* User Avatar */}
         <div className="flex-shrink-0">
           <Image
-            src={notes[0]?.author.avatar || '/profile-placeholder.png'}
+            src={notes[0]?.author.avatar || '/icons/account.svg'}
             alt={notes[0]?.author.name || 'User'}
-            width={40}
-            height={40}
+            width={30}
+            height={30}
             className="rounded-full object-cover"
           />
         </div>

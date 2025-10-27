@@ -79,7 +79,11 @@ export const ProfileView = () => {
       {/* Profile Section */}
       <main className="max-w-3xl mx-auto px-4 md:px-20 lg:px-40 py-8">
         <div className="flex flex-col  text-center mb-8">
-          <Avatar imageUrl={image} fullName={fullname} />
+          <Avatar
+            imageUrl={image}
+            fullName={fullname}
+            className="w-24 h-24 mx-auto mb-4"
+          />
           <h1 className="text-xl font-semibold mb-1 mx-auto text-center truncate max-w-[200px] sm:max-w-[200px] md:max-w-[350px] lg:max-w-[400px]">
             {fullname}
           </h1>
