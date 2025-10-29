@@ -49,22 +49,23 @@ const RecipeSection: React.FC<RecipeSectionProps> = ({
     </p>
     <HorizontalScrollSection title="" sectionWidth="max-w-5xl">
       {recipes.map((rec, idx) => (
-        <RecipeCard
-          key={rec.title}
-          title={rec.title}
-          img={rec.img}
-          rating={rec.rating}
-          ingredients={rec.ingredients}
-          author={rec.author}
-          authorAvatar={rec.authorAvatar}
-          isBookmarked={rec.isBookmarked}
-          time={rec.time}
-          onClick={() => onCardClick(rec.title)}
-          onBookmark={(e) => onBookmark(idx, e)}
-          onMenu={(e) => onMenu(idx, e)}
-          menuOpen={openMenuIndex === idx}
-          className="w-[160px] sm:w-[180px] md:w-[200px] lg:w-[220px]"
-        />
+        <div key={rec.title} className="flex-shrink-0 w-[70vw] sm:w-[220px]">
+          <RecipeCard
+            title={rec.title}
+            img={rec.img}
+            rating={rec.rating}
+            ingredients={rec.ingredients}
+            author={rec.author}
+            authorAvatar={rec.authorAvatar}
+            isBookmarked={rec.isBookmarked}
+            time={rec.time}
+            onClick={() => onCardClick(rec.title)}
+            onBookmark={(e) => onBookmark(idx, e)}
+            onMenu={(e) => onMenu(idx, e)}
+            menuOpen={openMenuIndex === idx}
+            className="w-full h-full flex flex-col"
+          />
+        </div>
       ))}
     </HorizontalScrollSection>
   </section>

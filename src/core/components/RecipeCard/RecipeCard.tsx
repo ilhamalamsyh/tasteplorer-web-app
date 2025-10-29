@@ -33,7 +33,7 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
   className = '',
 }) => (
   <div
-    className={`w-[190px] sm:w-[180px] md:w-[180px] lg:w-[190px] xl:w-[210px] bg-white rounded-2xl transition overflow-hidden flex flex-col border border-transparent p-0 relative cursor-pointer isolate ${className}`}
+    className={`bg-white rounded-2xl transition overflow-hidden flex flex-col border border-transparent p-0 relative cursor-pointer isolate w-full ${className}`}
     onClick={onClick}
   >
     {/* Image with badge, bookmark, author, and menu */}
