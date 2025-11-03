@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from 'next/link';
 import RecipeCard from '@/core/components/RecipeCard/RecipeCard';
 import HorizontalScrollSection from '@/core/components/HorizontalScrollSection/HorizontalScrollSection';
 
@@ -38,9 +39,9 @@ const RecipeSection: React.FC<RecipeSectionProps> = ({
       <h2 className="text-2xl font-semibold font-poppins text-gray-800 text-left">
         {sectionTitle}
       </h2>
-      <a href="#" className="text-sm text-gray-400 font-semibold">
+      <Link href="/recipes" className="text-sm text-gray-400 font-semibold">
         See All
-      </a>
+      </Link>
     </div>
     <p className="text-gray-500 text-sm mb-2 px-2">
       Find and share everyday cooking inspiration with ratings and reviews you
