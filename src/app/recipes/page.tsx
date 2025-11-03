@@ -112,9 +112,7 @@ const RecipesPage: React.FC = () => {
                 rating={4.5}
                 ingredients={recipe.ingredients?.length || 0}
                 author={recipe.author?.username || '-'}
-                authorAvatar={
-                  'https://upload.wikimedia.org/wikipedia/en/thumb/a/a4/Roronoa_Zoro.jpg/250px-Roronoa_Zoro.jpg'
-                }
+                authorAvatar={recipe?.author.image || ''}
                 isBookmarked={false}
                 time={recipe.cookingTime}
                 onClick={() => {}}

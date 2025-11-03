@@ -41,6 +41,7 @@ export const RECIPE_LIST_QUERY = gql`
         author {
           id
           username
+          image
         }
         image {
           id

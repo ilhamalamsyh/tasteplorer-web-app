@@ -36,6 +36,8 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
   const validImg =
     img && typeof img === 'string' && img.trim() !== '' ? img : fallbackImg;
 
+  const getInitials = (name: string) => name.trim().charAt(0).toUpperCase();
+
   return (
     <div
       className={`bg-white rounded-2xl transition overflow-hidden flex flex-col border border-transparent p-0 relative cursor-pointer isolate w-full ${className}`}
@@ -102,11 +104,12 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
                   className="rounded-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full bg-gray-300 rounded-full flex items-center justify-center text-gray-600 font-bold text-xs">
-                  {author.charAt(0).toUpperCase()}
-                </div>
+                <span className="flex items-center justify-center w-full h-full bg-gray-300 text-black text-[10px] sm:text-xs font-bold rounded-full">
+                  {getInitials(author)}
+                </span>
               )}
             </div>
+
             <span className="text-[10px] sm:text-xs font-medium text-gray-700 truncate max-w-[60px] sm:max-w-[80px]">
               {author}
             </span>
