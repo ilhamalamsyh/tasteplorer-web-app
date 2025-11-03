@@ -5,6 +5,7 @@
 import Image from 'next/image';
 import React, { useEffect, useRef, useState } from 'react';
 import { useQuery } from '@apollo/client';
+import { useRouter } from 'next/navigation';
 import RecipeCard from '@/core/components/RecipeCard/RecipeCard';
 import { RECIPE_LIST_QUERY } from '@/features/recipe/services/query';
 
@@ -49,6 +50,7 @@ const RecipesPage: React.FC = () => {
   const [sort, setSort] = useState<SortOption>('relevance');
   const loaderRef = useRef<HTMLDivElement | null>(null);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
+  const router = useRouter();
 
   const { data, loading, fetchMore } = useQuery(RECIPE_LIST_QUERY, {
     variables: { search: '', after: '' },
@@ -115,7 +117,7 @@ const RecipesPage: React.FC = () => {
                 authorAvatar={recipe?.author.image || ''}
                 isBookmarked={false}
                 time={recipe.cookingTime}
-                onClick={() => {}}
+                onClick={() => router.push(`/recipes/${recipe.id}`)}
                 onBookmark={(e) => {
                   e.stopPropagation();
                 }}
