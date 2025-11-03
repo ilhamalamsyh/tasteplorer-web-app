@@ -3,9 +3,10 @@
 'use client';
 
 import Image from 'next/image';
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
+import { useQuery } from '@apollo/client';
 import RecipeCard from '@/core/components/RecipeCard/RecipeCard';
-import { recipes as dummyRecipes } from '@/core/data/recipes';
+import { RECIPE_LIST_QUERY } from '@/features/recipe/services/query';
 
 // Tipe sort
 type SortOption = 'relevance' | 'popularity' | 'latest';
@@ -44,55 +45,42 @@ const RecipeSkeletonGrid: React.FC<{ count: number }> = ({ count }) => (
   </div>
 );
 
-const fetchRecipes = async (page: number, limit: number, sort: string) => {
-  // Simulasi delay dan pagination dummy
-  await new Promise((r) => setTimeout(r, 600));
-  const start = (page - 1) * limit;
-  const end = start + limit;
-  return dummyRecipes.slice(start, end);
-};
-
 const RecipesPage: React.FC = () => {
-  const [recipes, setRecipes] = useState<any[]>([]);
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
-  const [isLoading, setIsLoading] = useState(false);
   const [sort, setSort] = useState<SortOption>('relevance');
   const loaderRef = useRef<HTMLDivElement | null>(null);
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
 
-  // Fetch recipes
-  const loadRecipes = useCallback(
-    async (reset = false) => {
-      setIsLoading(true);
-      try {
-        const data = await fetchRecipes(reset ? 1 : page, LIMIT, sort);
-        if (reset) {
-          setRecipes(data);
-        } else {
-          setRecipes((prev) => [...prev, ...data]);
-        }
-        setHasMore(data.length === LIMIT);
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [page, sort]
-  );
+  const { data, loading, fetchMore } = useQuery(RECIPE_LIST_QUERY, {
+    variables: { search: '', after: '' },
+    notifyOnNetworkStatusChange: true,
+  });
 
-  // Initial & sort change fetch
-  useEffect(() => {
-    setPage(1);
-    loadRecipes(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sort]);
+  const recipes = data?.recipeList?.recipes || [];
+  const meta = data?.recipeList?.meta || {};
 
   // Infinite scroll
   useEffect(() => {
-    if (!hasMore || isLoading) return;
+    if (!meta.hasNextPage || loading || isFetchingMore) return;
     const observer = new window.IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting) {
-          setPage((p) => p + 1);
+          setIsFetchingMore(true);
+          fetchMore({
+            variables: { after: meta.endCursor },
+            updateQuery: (prev, { fetchMoreResult }) => {
+              setIsFetchingMore(false);
+              if (!fetchMoreResult) return prev;
+              return {
+                recipeList: {
+                  ...fetchMoreResult.recipeList,
+                  recipes: [
+                    ...prev.recipeList.recipes,
+                    ...fetchMoreResult.recipeList.recipes,
+                  ],
+                },
+              };
+            },
+          });
         }
       },
       { threshold: 1 }
@@ -101,14 +89,7 @@ const RecipesPage: React.FC = () => {
     return () => {
       if (loaderRef.current) observer.unobserve(loaderRef.current);
     };
-  }, [hasMore, isLoading]);
-
-  // Fetch next page
-  useEffect(() => {
-    if (page === 1) return;
-    loadRecipes();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page]);
+  }, [meta.hasNextPage, meta.endCursor, loading, fetchMore, isFetchingMore]);
 
   return (
     <div className="w-full bg-white">
@@ -123,17 +104,19 @@ const RecipesPage: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-            {recipes.map((recipe, idx) => (
+            {recipes.map((recipe: any, idx: number) => (
               <RecipeCard
-                key={recipe.title + idx}
+                key={recipe.id}
                 title={recipe.title}
-                img={recipe.img}
-                rating={recipe.rating}
-                ingredients={recipe.ingredients}
-                author={recipe.author}
-                authorAvatar={recipe.authorAvatar}
-                isBookmarked={recipe.isBookmarked}
-                time={recipe.time}
+                img={recipe.image?.url || '/images/broken-image.png'}
+                rating={4.5}
+                ingredients={recipe.ingredients?.length || 0}
+                author={recipe.author?.username || '-'}
+                authorAvatar={
+                  'https://upload.wikimedia.org/wikipedia/en/thumb/a/a4/Roronoa_Zoro.jpg/250px-Roronoa_Zoro.jpg'
+                }
+                isBookmarked={false}
+                time={recipe.cookingTime}
                 onClick={() => {}}
                 onBookmark={(e) => {
                   e.stopPropagation();
@@ -146,17 +129,15 @@ const RecipesPage: React.FC = () => {
             ))}
           </div>
 
-          {isLoading && recipes.length === 0 && (
-            <RecipeSkeletonGrid count={24} />
-          )}
+          {loading && recipes.length === 0 && <RecipeSkeletonGrid count={24} />}
 
           <div ref={loaderRef} className="h-8" />
-          {isLoading && recipes.length > 0 && (
+          {(loading || isFetchingMore) && recipes.length > 0 && (
             <div className="flex justify-center py-6">
               <span className="w-8 h-8 rounded-full border-4 border-gray-300 border-t-primary animate-spin" />
             </div>
           )}
-          {!hasMore && recipes.length > 0 && (
+          {!meta.hasNextPage && recipes.length > 0 && (
             <div className="text-center text-gray-400 py-8">
               No more recipes
             </div>
