@@ -50,7 +50,7 @@ const RecipeSection: React.FC<RecipeSectionProps> = ({
     </p>
     <HorizontalScrollSection title="" sectionWidth="max-w-5xl">
       {recipes.map((rec, idx) => (
-        <div key={rec.title} className="flex-shrink-0 w-[70vw] sm:w-[220px]">
+        <div key={rec.title} className="flex-shrink-0 w-[49vw] sm:w-[220px]">
           <RecipeCard
             title={rec.title}
             img={rec.img}
