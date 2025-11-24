@@ -40,6 +40,7 @@ const Search: React.FC<SearchProps> = ({
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       handleSearch();
+      setIsFocused(false); // Close overlay panel on Enter
     }
   };
 

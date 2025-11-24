@@ -1,5 +1,6 @@
 'use client';
 import React from 'react';
+import { useSearchParams } from 'next/navigation';
 import Search from '@/core/components/field/Search';
 import CategoryTabs, {
   CategoryTab,
@@ -76,6 +77,8 @@ const SearchResultsPage: React.FC = () => {
   const [activeTab, setActiveTab] = React.useState(categoryTabs[0].value);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [chips, setChips] = React.useState(filterChips);
+  const searchParams = useSearchParams();
+  const searchQuery = searchParams?.get('search_query') || '';
 
   return (
     <div className="w-full min-h-screen bg-gray-50">
@@ -83,6 +86,10 @@ const SearchResultsPage: React.FC = () => {
       <div className="w-full max-w-5xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8 py-8">
         {/* Card-like container for search section */}
         <div className="bg-white rounded-2xl p-6 mb-4">
+          {/* Search results text above search field */}
+          <div className="text-lg font-semibold text-gray-800 mb-4">
+            {searchQuery ? `“${searchQuery}” search results` : 'Search results'}
+          </div>
           <Search />
           <CategoryTabs
             tabs={categoryTabs}
