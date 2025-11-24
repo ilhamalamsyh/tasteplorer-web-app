@@ -1,103 +1,151 @@
-'use-client';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+'use client';
 
 import Image from 'next/image';
+import React, { useEffect, useRef, useState } from 'react';
+import { useQuery } from '@apollo/client';
+import { useRouter } from 'next/navigation';
+import RecipeCard from '@/core/components/RecipeCard/RecipeCard';
+import { RECIPE_LIST_QUERY } from '@/features/recipe/services/query';
 
-export default function Home() {
+// Tipe sort
+type SortOption = 'relevance' | 'popularity' | 'latest';
+const SORT_LABELS: Record<SortOption, string> = {
+  relevance: 'Relevance',
+  popularity: 'Popularity',
+  latest: 'Latest',
+};
+const LIMIT = 24;
+
+const SortDropdown: React.FC<{
+  value: SortOption;
+  onChange: (v: SortOption) => void;
+}> = ({ value, onChange }) => (
+  <select
+    className="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none"
+    value={value}
+    onChange={(e) => onChange(e.target.value as SortOption)}
+  >
+    {Object.entries(SORT_LABELS).map(([key, label]) => (
+      <option key={key} value={key}>
+        {label}
+      </option>
+    ))}
+  </select>
+);
+
+const RecipeSkeletonGrid: React.FC<{ count: number }> = ({ count }) => (
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-2">
+    {Array.from({ length: count }).map((_, i) => (
+      <div
+        key={i}
+        className="rounded-2xl bg-gray-100 animate-pulse h-72 w-full"
+      />
+    ))}
+  </div>
+);
+
+const RecipesPage: React.FC = () => {
+  const [sort, setSort] = useState<SortOption>('relevance');
+  const loaderRef = useRef<HTMLDivElement | null>(null);
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
+  const router = useRouter();
+
+  const { data, loading, fetchMore } = useQuery(RECIPE_LIST_QUERY, {
+    variables: { search: '', after: '' },
+    notifyOnNetworkStatusChange: true,
+  });
+
+  const recipes = data?.recipeList?.recipes || [];
+  const meta = data?.recipeList?.meta || {};
+
+  // Infinite scroll
+  useEffect(() => {
+    if (!meta.hasNextPage || loading || isFetchingMore) return;
+    const observer = new window.IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setIsFetchingMore(true);
+          fetchMore({
+            variables: { after: meta.endCursor },
+            updateQuery: (prev, { fetchMoreResult }) => {
+              setIsFetchingMore(false);
+              if (!fetchMoreResult) return prev;
+              return {
+                recipeList: {
+                  ...fetchMoreResult.recipeList,
+                  recipes: [
+                    ...prev.recipeList.recipes,
+                    ...fetchMoreResult.recipeList.recipes,
+                  ],
+                },
+              };
+            },
+          });
+        }
+      },
+      { threshold: 1 }
+    );
+    if (loaderRef.current) observer.observe(loaderRef.current);
+    return () => {
+      if (loaderRef.current) observer.unobserve(loaderRef.current);
+    };
+  }, [meta.hasNextPage, meta.endCursor, loading, fetchMore, isFetchingMore]);
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Anjay Guys{' '}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Hello World anjay.</li>
-        </ol>
+    <div className="w-full bg-white">
+      <div className="w-full max-w-[1400px] mx-auto px-0 md:px-0 py-0 flex flex-col items-center">
+        <div className="w-full bg-white md:w-4/5 md:bg-white md:rounded-2xl md:shadow-md md:p-8 px-4 md:px-10 py-8">
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <p className="text-sm text-gray-500">Tasteplorer / Recipes</p>
+              <h1 className="text-2xl font-bold">Recipes</h1>
+            </div>
+            <SortDropdown value={sort} onChange={setSort} />
+          </div>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            {recipes.map((recipe: any, idx: number) => (
+              <RecipeCard
+                key={recipe.id}
+                title={recipe.title}
+                img={recipe.image?.url || '/images/broken-image.png'}
+                rating={4.5}
+                ingredients={recipe.ingredients?.length || 0}
+                author={recipe.author?.username || '-'}
+                authorAvatar={recipe?.author.image || ''}
+                isBookmarked={false}
+                time={recipe.cookingTime}
+                onClick={() => router.push(`/recipes/${recipe.id}`)}
+                onBookmark={(e) => {
+                  e.stopPropagation();
+                }}
+                onMenu={(e) => {
+                  e.stopPropagation();
+                }}
+                menuOpen={false}
+              />
+            ))}
+          </div>
+
+          {loading && recipes.length === 0 && <RecipeSkeletonGrid count={24} />}
+
+          <div ref={loaderRef} className="h-8" />
+          {(loading || isFetchingMore) && recipes.length > 0 && (
+            <div className="flex justify-center py-6">
+              <span className="w-8 h-8 rounded-full border-4 border-gray-300 border-t-primary animate-spin" />
+            </div>
+          )}
+          {!meta.hasNextPage && recipes.length > 0 && (
+            <div className="text-center text-gray-400 py-8">
+              No more recipes
+            </div>
+          )}
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </div>
     </div>
   );
-}
+};
+
+export default RecipesPage;

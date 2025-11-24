@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from 'next/link';
 import RecipeCard from '@/core/components/RecipeCard/RecipeCard';
 import HorizontalScrollSection from '@/core/components/HorizontalScrollSection/HorizontalScrollSection';
 
@@ -38,9 +39,9 @@ const RecipeSection: React.FC<RecipeSectionProps> = ({
       <h2 className="text-2xl font-semibold font-poppins text-gray-800 text-left">
         {sectionTitle}
       </h2>
-      <a href="#" className="text-sm text-gray-400 font-semibold">
+      <Link href="/recipes" className="text-sm text-gray-400 font-semibold">
         See All
-      </a>
+      </Link>
     </div>
     <p className="text-gray-500 text-sm mb-2 px-2">
       Find and share everyday cooking inspiration with ratings and reviews you
@@ -49,22 +50,23 @@ const RecipeSection: React.FC<RecipeSectionProps> = ({
     </p>
     <HorizontalScrollSection title="" sectionWidth="max-w-5xl">
       {recipes.map((rec, idx) => (
-        <RecipeCard
-          key={rec.title}
-          title={rec.title}
-          img={rec.img}
-          rating={rec.rating}
-          ingredients={rec.ingredients}
-          author={rec.author}
-          authorAvatar={rec.authorAvatar}
-          isBookmarked={rec.isBookmarked}
-          time={rec.time}
-          onClick={() => onCardClick(rec.title)}
-          onBookmark={(e) => onBookmark(idx, e)}
-          onMenu={(e) => onMenu(idx, e)}
-          menuOpen={openMenuIndex === idx}
-          className="w-[160px] sm:w-[180px] md:w-[200px] lg:w-[220px]"
-        />
+        <div key={rec.title} className="flex-shrink-0 w-[49vw] sm:w-[220px]">
+          <RecipeCard
+            title={rec.title}
+            img={rec.img}
+            rating={rec.rating}
+            ingredients={rec.ingredients}
+            author={rec.author}
+            authorAvatar={rec.authorAvatar}
+            isBookmarked={rec.isBookmarked}
+            time={rec.time}
+            onClick={() => onCardClick(rec.title)}
+            onBookmark={(e) => onBookmark(idx, e)}
+            onMenu={(e) => onMenu(idx, e)}
+            menuOpen={openMenuIndex === idx}
+            className="w-full h-full flex flex-col"
+          />
+        </div>
       ))}
     </HorizontalScrollSection>
   </section>
