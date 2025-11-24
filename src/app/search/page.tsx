@@ -99,6 +99,12 @@ const SearchResultsPage: React.FC = () => {
           <SubHeaderText />
           <div className="flex items-center justify-between mt-6 mb-2">
             <h2 className="text-xl font-bold text-gray-900">Recipes</h2>
+            <button
+              type="button"
+              className="text-sm text-gray-500 font-semibold"
+            >
+              See all {dummyRecipes.length} results
+            </button>
           </div>
           <FilterChips chips={chips} />
           <RecipeGrid recipes={dummyRecipes} />
