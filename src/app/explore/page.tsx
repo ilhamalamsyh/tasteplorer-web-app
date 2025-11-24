@@ -9,6 +9,7 @@ import { recipes as recipesData } from '@/core/data/recipes';
 import SectionDivider from '@/core/components/SectionDivider/SectionDivider';
 import RecipeSection from '@/core/components/RecipeSection/RecipeSection';
 import HorizontalScrollSection from '@/core/components/HorizontalScrollSection/HorizontalScrollSection';
+import Search from '@/core/components/field/Search';
 
 const ExplorePage = () => {
   const router = useRouter();
@@ -46,16 +47,7 @@ const ExplorePage = () => {
           Welcome to Tasteplorer, your go-to app for recipe saving, shopping,
           and meal planning. Discover, save, and share your favorite recipes!
         </p>
-        <div className="w-full max-w-lg flex items-center bg-white rounded-full shadow-sm overflow-hidden border border-gray-200 mx-auto">
-          <input
-            type="text"
-            placeholder="Search recipes, ingredients, creators..."
-            className="flex-1 px-6 py-3 text-gray-700 outline-none font-poppins rounded-l-full bg-transparent"
-          />
-          <button className="bg-primary text-white px-6 py-3 font-semibold rounded-r-full hover:bg-orange-600 transition">
-            Search
-          </button>
-        </div>
+        <Search />
       </section>
       <div className="max-w-5xl mx-auto w-full bg-white">
         {/* Categories */}
