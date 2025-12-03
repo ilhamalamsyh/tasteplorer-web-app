@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import Search from '@/core/components/field/Search';
 import CategoryTabs, {
   CategoryTab,
@@ -79,6 +79,7 @@ const SearchResultsPage: React.FC = () => {
   const [chips, setChips] = React.useState(filterChips);
   const searchParams = useSearchParams();
   const searchQuery = searchParams?.get('search_query') || '';
+  const router = useRouter();
 
   return (
     <div className="w-full min-h-screen bg-gray-50">
@@ -102,6 +103,7 @@ const SearchResultsPage: React.FC = () => {
             <button
               type="button"
               className="text-sm text-gray-500 font-semibold"
+              onClick={() => router.push('/recipes')}
             >
               See all {dummyRecipes.length} results
             </button>
