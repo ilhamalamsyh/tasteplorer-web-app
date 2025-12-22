@@ -5,7 +5,7 @@
 import Image from 'next/image';
 import React, { useEffect, useRef, useState } from 'react';
 import { useQuery } from '@apollo/client';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import RecipeCard from '@/core/components/RecipeCard/RecipeCard';
 import { RECIPE_LIST_QUERY } from '@/features/recipe/services/query';
 
@@ -51,9 +51,14 @@ const RecipesPage: React.FC = () => {
   const loaderRef = useRef<HTMLDivElement | null>(null);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const searchQuery = searchParams?.get('search_query') || '';
 
   const { data, loading, fetchMore } = useQuery(RECIPE_LIST_QUERY, {
-    variables: { search: '', after: '' },
+    variables: {
+      search: searchQuery || undefined,
+      after: undefined,
+    },
     notifyOnNetworkStatusChange: true,
   });
 
@@ -63,6 +68,7 @@ const RecipesPage: React.FC = () => {
   // Infinite scroll
   useEffect(() => {
     if (!meta.hasNextPage || loading || isFetchingMore) return;
+    const currentLoader = loaderRef.current;
     const observer = new window.IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting) {
@@ -87,9 +93,9 @@ const RecipesPage: React.FC = () => {
       },
       { threshold: 1 }
     );
-    if (loaderRef.current) observer.observe(loaderRef.current);
+    if (currentLoader) observer.observe(currentLoader);
     return () => {
-      if (loaderRef.current) observer.unobserve(loaderRef.current);
+      if (currentLoader) observer.unobserve(currentLoader);
     };
   }, [meta.hasNextPage, meta.endCursor, loading, fetchMore, isFetchingMore]);
 
@@ -100,34 +106,56 @@ const RecipesPage: React.FC = () => {
           <div className="flex justify-between items-center mb-6">
             <div>
               <p className="text-sm text-gray-500">Tasteplorer / Recipes</p>
-              <h1 className="text-2xl font-bold">Recipes</h1>
+              <h1 className="text-2xl font-bold">
+                {searchQuery
+                  ? `Search results for "${searchQuery}"`
+                  : 'Recipes'}
+              </h1>
             </div>
             <SortDropdown value={sort} onChange={setSort} />
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-            {recipes.map((recipe: any, idx: number) => (
-              <RecipeCard
-                key={recipe.id}
-                title={recipe.title}
-                img={recipe.image?.url || '/images/broken-image.png'}
-                rating={4.5}
-                ingredients={recipe.ingredients?.length || 0}
-                author={recipe.author?.username || '-'}
-                authorAvatar={recipe?.author.image || ''}
-                isBookmarked={false}
-                time={recipe.cookingTime}
-                onClick={() => router.push(`/recipes/${recipe.id}`)}
-                onBookmark={(e) => {
-                  e.stopPropagation();
-                }}
-                onMenu={(e) => {
-                  e.stopPropagation();
-                }}
-                menuOpen={false}
+          {/* Empty state */}
+          {!loading && recipes.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-12">
+              <Image
+                src="/icons/not_found_icon.svg"
+                alt="No results found"
+                width={120}
+                height={120}
+                className="mb-4"
               />
-            ))}
-          </div>
+              <p className="text-gray-500 text-base font-medium">
+                No recipes found. Try a new keyword!
+              </p>
+            </div>
+          )}
+
+          {recipes.length > 0 && (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+              {recipes.map((recipe: any, idx: number) => (
+                <RecipeCard
+                  key={recipe.id}
+                  title={recipe.title}
+                  img={recipe.image?.url || '/images/broken-image.png'}
+                  rating={4.5}
+                  ingredients={recipe.ingredients?.length || 0}
+                  author={recipe.author?.username || '-'}
+                  authorAvatar={recipe?.author.image || ''}
+                  isBookmarked={false}
+                  time={recipe.cookingTime}
+                  onClick={() => router.push(`/recipes/${recipe.id}`)}
+                  onBookmark={(e) => {
+                    e.stopPropagation();
+                  }}
+                  onMenu={(e) => {
+                    e.stopPropagation();
+                  }}
+                  menuOpen={false}
+                />
+              ))}
+            </div>
+          )}
 
           {loading && recipes.length === 0 && <RecipeSkeletonGrid count={24} />}
 
