@@ -91,7 +91,7 @@ const SearchOverlayPanel: React.FC<SearchOverlayPanelProps> = ({
               ))}
             </div>
           ) : (
-            <p className="text-gray-400 text-sm">Belum ada riwayat pencarian</p>
+            <p className="text-gray-400 text-sm">No recent searches</p>
           )}
         </div>
         <div>
