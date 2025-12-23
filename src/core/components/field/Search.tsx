@@ -2,6 +2,7 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import SearchOverlayPanel from './SearchOverlayPanel';
+import { addSearchHistory } from '@/utils/search-history';
 
 interface SearchProps {
   placeholder?: string;
@@ -30,11 +31,24 @@ const Search: React.FC<SearchProps> = ({
 
   const handleSearch = () => {
     if (inputValue.trim()) {
+      // Save to search history
+      addSearchHistory(inputValue.trim());
+
       router.push(
         `/search?search_query=${encodeURIComponent(inputValue.trim())}`
       );
     }
     onSearch?.(inputValue);
+  };
+
+  const handleHistoryClick = (keyword: string) => {
+    setInternalValue(keyword);
+    setIsFocused(false);
+
+    // Save to search history
+    addSearchHistory(keyword);
+
+    router.push(`/search?search_query=${encodeURIComponent(keyword)}`);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -99,7 +113,7 @@ const Search: React.FC<SearchProps> = ({
           Search
         </button>
       </div>
-      {isFocused && <SearchOverlayPanel />}
+      {isFocused && <SearchOverlayPanel onHistoryClick={handleHistoryClick} />}
     </div>
   );
 };
