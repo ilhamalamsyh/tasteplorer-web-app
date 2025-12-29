@@ -12,3 +12,22 @@ export const CURRENT_USER = gql`
     }
   }
 `;
+
+export const USERS_QUERY = gql`
+  query Users($input: UsersQueryInput) {
+    users(input: $input) {
+      data {
+        id
+        username
+        fullname
+        email
+        image
+        createdAt
+        updatedAt
+      }
+      total
+      nextCursor
+      hasMore
+    }
+  }
+`;
