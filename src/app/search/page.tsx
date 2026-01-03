@@ -189,8 +189,7 @@ const SearchResultsPage: React.FC = () => {
   }, [searchQuery, router]);
 
   const handleUserClick = (userId: string) => {
-    // TODO: Navigate to user profile
-    console.log('Navigate to user:', userId);
+    router.push(`/users/${userId}`);
   };
 
   const handleFollowToggle = (userId: string, e: React.MouseEvent) => {
