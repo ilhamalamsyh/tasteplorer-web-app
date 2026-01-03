@@ -4,7 +4,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@apollo/client';
-import { USER_PROFILE_QUERY, USER_RECIPE_LIST_QUERY } from '@/features/user/services/query';
+import {
+  USER_PROFILE_QUERY,
+  USER_RECIPE_LIST_QUERY,
+} from '@/features/user/services/query';
 import { Avatar } from '@/core/components/image/Avatar';
 import RecipeCard from '@/core/components/RecipeCard/RecipeCard';
 import useSnackbar from '@/core/hooks/useSnackbar';
@@ -224,7 +227,8 @@ export default function UserDetailPage({ params }: UserDetailPageProps) {
       </div>
     );
 
-  const { username, fullname, image, followers, following } = userData.userProfile;
+  const { username, fullname, image, followers, following } =
+    userData.userProfile;
 
   const handleCardClick = (recipeId: string) => {
     router.push(`/recipes/${recipeId}`);

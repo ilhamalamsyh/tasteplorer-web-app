@@ -49,18 +49,16 @@ export const MY_RECIPE_LIST_QUERY = gql`
         }
         ingredients {
           id
-          name
-          quantity
-          unit
+          ingredient
         }
         instructions {
           id
-          stepNumber
           instruction
         }
         author {
           id
-          name
+          username
+          fullname
           email
         }
       }
@@ -101,8 +99,18 @@ export const USER_PROFILE_QUERY = gql`
 `;
 
 export const USER_RECIPE_LIST_QUERY = gql`
-  query UserRecipeList($userId: Int!, $search: String, $after: String, $limit: Int) {
-    userRecipeList(userId: $userId, search: $search, after: $after, limit: $limit) {
+  query UserRecipeList(
+    $userId: Int!
+    $search: String
+    $after: String
+    $limit: Int
+  ) {
+    userRecipeList(
+      userId: $userId
+      search: $search
+      after: $after
+      limit: $limit
+    ) {
       recipes {
         id
         title
