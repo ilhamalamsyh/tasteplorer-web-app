@@ -2,11 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useQuery } from '@apollo/client';
-import { CURRENT_USER, MY_RECIPE_LIST_QUERY } from '../services/query';
-import { client } from '@/lib/apollo-client';
 import { Avatar } from '@/core/components/image/Avatar';
 import RecipeCard from '@/core/components/RecipeCard/RecipeCard';
 import useSnackbar from '@/core/hooks/useSnackbar';
@@ -14,55 +10,95 @@ import Snackbar from '@/core/components/snackbar/Snackbar';
 
 // TypeScript interfaces
 interface RecipeImage {
-  id: string;
+  id?: string;
   url: string;
 }
 
 interface RecipeIngredient {
   id: string;
-  name: string;
-  quantity: string;
-  unit: string;
+  name?: string;
+  ingredient?: string;
+  quantity?: string;
+  unit?: string;
 }
 
 interface RecipeInstruction {
   id: string;
-  stepNumber: number;
+  stepNumber?: number;
   instruction: string;
 }
 
-interface RecipeAuthor {
-  id: string;
-  name: string;
-  email: string;
-}
-
-interface MyRecipe {
+interface Recipe {
   id: string;
   title: string;
   description?: string;
   servings?: number;
   cookingTime?: number;
-  createdAt: string;
-  updatedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
   image?: RecipeImage;
   ingredients?: RecipeIngredient[];
   instructions?: RecipeInstruction[];
-  author?: RecipeAuthor;
 }
 
-interface MyRecipeListData {
-  myRecipeList: {
-    recipes: MyRecipe[];
-    meta: {
-      total: number;
-      endCursor?: string;
-      hasNextPage: boolean;
-    };
+interface RecipeListMeta {
+  total: number;
+  endCursor?: string;
+  hasNextPage: boolean;
+}
+
+interface ProfileStats {
+  posts: number;
+  following: number;
+  followers: number;
+}
+
+interface ProfileViewProps {
+  // User data
+  username: string;
+  fullname: string;
+  image?: string;
+
+  // Stats
+  stats: ProfileStats;
+
+  // Recipe data
+  recipes: Recipe[];
+  recipesLoading: boolean;
+  recipesError?: Error | null;
+  recipesMeta: RecipeListMeta;
+
+  // Callbacks
+  onFetchMore?: (cursor: string) => void;
+  onSearchChange?: (query: string) => void;
+
+  // Action button props
+  actionButton?: {
+    label: string;
+    onClick: () => void;
+    variant?: 'edit' | 'follow' | 'following';
   };
+
+  // Optional
+  isOwnProfile?: boolean;
+  emptyStateMessage?: string;
 }
 
-export const ProfileView = () => {
+export const ProfileView: React.FC<ProfileViewProps> = ({
+  username,
+  fullname,
+  image,
+  stats,
+  recipes,
+  recipesLoading,
+  recipesError,
+  recipesMeta,
+  onFetchMore,
+  onSearchChange,
+  actionButton,
+  isOwnProfile = false,
+  emptyStateMessage,
+}) => {
   const router = useRouter();
   const loaderRef = useRef<HTMLDivElement | null>(null);
   const [openMenuIndex, setOpenMenuIndex] = useState<number | null>(null);
@@ -86,53 +122,12 @@ export const ProfileView = () => {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // Fetch current user
-  const {
-    loading: userLoading,
-    error: userError,
-    data: userData,
-  } = useQuery(CURRENT_USER, {
-    client,
-    fetchPolicy: 'network-only',
-  });
-
-  // Fetch user's recipes
-  const {
-    loading: recipesLoading,
-    error: recipesError,
-    data: recipesData,
-    fetchMore,
-  } = useQuery<MyRecipeListData>(MY_RECIPE_LIST_QUERY, {
-    variables: {
-      search: debouncedSearchQuery || undefined,
-      limit: 24,
-      after: undefined,
-    },
-    skip: !userData?.currentUser, // Skip until user data is loaded
-    fetchPolicy: 'network-only',
-    notifyOnNetworkStatusChange: true,
-  });
-
-  // Handle token expired error
+  // Trigger search callback when debounced query changes
   useEffect(() => {
-    if (userError) {
-      const errorMessage = userError.message.toLowerCase();
-      if (
-        errorMessage.includes('token') &&
-        (errorMessage.includes('expired') ||
-          errorMessage.includes('invalid') ||
-          errorMessage.includes('unauthorized'))
-      ) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        showError('Token expired. Please login again.');
-        setTimeout(() => {
-          router.push('/');
-        }, 2000);
-        return;
-      }
+    if (onSearchChange) {
+      onSearchChange(debouncedSearchQuery);
     }
-  }, [userError, showError, router]);
+  }, [debouncedSearchQuery, onSearchChange]);
 
   // Handle recipes error
   useEffect(() => {
@@ -141,36 +136,17 @@ export const ProfileView = () => {
     }
   }, [recipesError, showError]);
 
-  const recipes = recipesData?.myRecipeList?.recipes || [];
-  const meta = recipesData?.myRecipeList?.meta || {
-    total: 0,
-    hasNextPage: false,
-  };
-
   // Infinite scroll
   useEffect(() => {
-    if (!meta.hasNextPage || recipesLoading || isFetchingMore) return;
+    if (!recipesMeta.hasNextPage || recipesLoading || isFetchingMore) return;
     const currentLoader = loaderRef.current;
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && meta.endCursor) {
+        if (entries[0].isIntersecting && recipesMeta.endCursor && onFetchMore) {
           setIsFetchingMore(true);
-          fetchMore({
-            variables: { after: meta.endCursor },
-            updateQuery: (prev, { fetchMoreResult }) => {
-              setIsFetchingMore(false);
-              if (!fetchMoreResult) return prev;
-              return {
-                myRecipeList: {
-                  ...fetchMoreResult.myRecipeList,
-                  recipes: [
-                    ...prev.myRecipeList.recipes,
-                    ...fetchMoreResult.myRecipeList.recipes,
-                  ],
-                },
-              };
-            },
-          });
+          onFetchMore(recipesMeta.endCursor);
+          // Reset fetching state after a delay
+          setTimeout(() => setIsFetchingMore(false), 1000);
         }
       },
       { threshold: 1 }
@@ -180,18 +156,12 @@ export const ProfileView = () => {
       if (currentLoader) observer.unobserve(currentLoader);
     };
   }, [
-    meta.hasNextPage,
-    meta.endCursor,
+    recipesMeta.hasNextPage,
+    recipesMeta.endCursor,
     recipesLoading,
-    fetchMore,
+    onFetchMore,
     isFetchingMore,
   ]);
-
-  if (userLoading) return <p>Loading...</p>;
-  if (userError && !userError.message.toLowerCase().includes('token'))
-    return <p>Error: {userError.message}</p>;
-
-  const { username, fullname, image } = userData.currentUser;
 
   const handleCardClick = (recipeId: string) => {
     router.push(`/recipes/${recipeId}`);
@@ -211,6 +181,21 @@ export const ProfileView = () => {
     setSearchQuery(e.target.value);
   };
 
+  // Get button styling based on variant
+  const getButtonStyle = () => {
+    if (!actionButton) return '';
+
+    switch (actionButton.variant) {
+      case 'edit':
+        return 'w-full py-2 border-2 border-black text-black font-semibold rounded-3xl hover:bg-black hover:bg-opacity-5 transition active:scale-95';
+      case 'following':
+        return 'w-full py-2 bg-gray-200 text-gray-700 font-semibold rounded-3xl hover:bg-gray-300 transition active:scale-95';
+      case 'follow':
+      default:
+        return 'w-full py-2 bg-primary text-white font-semibold rounded-3xl hover:bg-orange-600 transition active:scale-95';
+    }
+  };
+
   return (
     <div>
       {/* Profile Section */}
@@ -227,26 +212,31 @@ export const ProfileView = () => {
           <p className="text-gray-500 mb-4">{`@${username}`}</p>
           <div className="flex justify-center gap-6 mb-4">
             <div className="text-center">
-              <p className="font-semibold">{meta.total}</p>
+              <p className="font-semibold">{stats.posts}</p>
               <p className="text-gray-500 text-sm">Posts</p>
             </div>
             <div className="text-center">
-              <p className="font-semibold">0</p>
+              <p className="font-semibold">{stats.following}</p>
               <p className="text-gray-500 text-sm">Following</p>
             </div>
             <div className="text-center">
-              <p className="font-semibold">0</p>
+              <p className="font-semibold">{stats.followers}</p>
               <p className="text-gray-500 text-sm">Followers</p>
             </div>
           </div>
-          <Link href={'/profile/edit'} className="flex justify-center">
-            <button
-              type="submit"
-              className="w-full py-2 border-2 border-black text-black font-semibold rounded-3xl hover:bg-black hover:bg-opacity-5 transition active:scale-95"
-            >
-              Edit Profile
-            </button>
-          </Link>
+
+          {/* Action Button */}
+          {actionButton && (
+            <div className="flex justify-center">
+              <button
+                type="button"
+                className={getButtonStyle()}
+                onClick={actionButton.onClick}
+              >
+                {actionButton.label}
+              </button>
+            </div>
+          )}
         </div>
       </main>
 
@@ -284,14 +274,18 @@ export const ProfileView = () => {
                 />
               </div>
               <h2 className="text-xl font-semibold mb-2">
-                {searchQuery ? 'No recipes found' : 'No cooking activity yet.'}
+                {searchQuery
+                  ? 'No recipes found'
+                  : emptyStateMessage || 'No cooking activity yet.'}
               </h2>
               <p className="text-gray-500 mb-4">
                 {searchQuery
                   ? 'Try a different search term'
-                  : 'From your kitchen to the world - Share your recipes!'}
+                  : isOwnProfile
+                  ? 'From your kitchen to the world - Share your recipes!'
+                  : 'This user has not posted any recipes yet.'}
               </p>
-              {!searchQuery && (
+              {!searchQuery && isOwnProfile && (
                 <button className="px-6 py-2 bg-orange-500 text-white font-semibold rounded-3xl hover:bg-orange-600 transition">
                   Post
                 </button>
@@ -310,7 +304,7 @@ export const ProfileView = () => {
                   rating={0}
                   ingredients={recipe.ingredients?.length || 0}
                   author={fullname}
-                  authorAvatar={image}
+                  authorAvatar={image || ''}
                   isBookmarked={false}
                   time={
                     recipe.cookingTime ? `${recipe.cookingTime} min` : 'N/A'
@@ -331,7 +325,7 @@ export const ProfileView = () => {
               <span className="w-8 h-8 rounded-full border-4 border-gray-300 border-t-primary animate-spin" />
             </div>
           )}
-          {!meta.hasNextPage && recipes.length > 0 && (
+          {!recipesMeta.hasNextPage && recipes.length > 0 && (
             <div className="text-center text-gray-400 py-8">
               No more recipes
             </div>
