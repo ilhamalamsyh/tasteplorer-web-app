@@ -1,6 +1,6 @@
 'use client';
 import React, { useEffect, useRef, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import { useQuery } from '@apollo/client';
 import Image from 'next/image';
 import UserCard from '@/core/components/UserCard/UserCard';
@@ -29,6 +29,7 @@ interface UsersData {
 const UsersPage: React.FC = () => {
   const searchParams = useSearchParams();
   const searchQuery = searchParams?.get('search_query') || '';
+  const router = useRouter();
   const loaderRef = useRef<HTMLDivElement | null>(null);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
   const [followingUsers, setFollowingUsers] = useState<Set<string>>(new Set());
@@ -101,8 +102,7 @@ const UsersPage: React.FC = () => {
   };
 
   const handleUserClick = (userId: string) => {
-    // TODO: Navigate to user profile
-    console.log('Navigate to user:', userId);
+    router.push(`/users/${userId}`);
   };
 
   return (

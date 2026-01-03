@@ -49,17 +49,76 @@ export const MY_RECIPE_LIST_QUERY = gql`
         }
         ingredients {
           id
+          name
+          quantity
+          unit
+        }
+        instructions {
+          id
+          stepNumber
+          instruction
+        }
+        author {
+          id
+          name
+          email
+        }
+      }
+      meta {
+        total
+        endCursor
+        hasNextPage
+      }
+    }
+  }
+`;
+
+export const USER_PROFILE_QUERY = gql`
+  query UserProfile($id: ID!) {
+    userProfile(id: $id) {
+      id
+      fullname
+      username
+      email
+      birthDate
+      image
+      followers {
+        data {
+          id
+          username
+        }
+        total
+      }
+      following {
+        data {
+          id
+          username
+        }
+        total
+      }
+    }
+  }
+`;
+
+export const USER_RECIPE_LIST_QUERY = gql`
+  query UserRecipeList($userId: Int!, $search: String, $after: String, $limit: Int) {
+    userRecipeList(userId: $userId, search: $search, after: $after, limit: $limit) {
+      recipes {
+        id
+        title
+        description
+        servings
+        cookingTime
+        image {
+          url
+        }
+        ingredients {
+          id
           ingredient
         }
         instructions {
           id
           instruction
-        }
-        author {
-          id
-          username
-          fullname
-          email
         }
       }
       meta {
