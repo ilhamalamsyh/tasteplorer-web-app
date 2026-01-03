@@ -31,3 +31,42 @@ export const USERS_QUERY = gql`
     }
   }
 `;
+
+export const MY_RECIPE_LIST_QUERY = gql`
+  query MyRecipeList($after: String, $limit: Int, $search: String) {
+    myRecipeList(after: $after, limit: $limit, search: $search) {
+      recipes {
+        id
+        title
+        description
+        servings
+        cookingTime
+        createdAt
+        updatedAt
+        image {
+          id
+          url
+        }
+        ingredients {
+          id
+          ingredient
+        }
+        instructions {
+          id
+          instruction
+        }
+        author {
+          id
+          username
+          fullname
+          email
+        }
+      }
+      meta {
+        total
+        endCursor
+        hasNextPage
+      }
+    }
+  }
+`;
