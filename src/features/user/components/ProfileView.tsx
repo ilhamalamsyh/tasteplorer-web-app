@@ -7,6 +7,7 @@ import { Avatar } from '@/core/components/image/Avatar';
 import RecipeCard from '@/core/components/RecipeCard/RecipeCard';
 import useSnackbar from '@/core/hooks/useSnackbar';
 import Snackbar from '@/core/components/snackbar/Snackbar';
+import { UserSuggestionCard } from './UserSuggestionCard';
 
 // TypeScript interfaces
 interface RecipeImage {
@@ -79,6 +80,22 @@ interface ProfileViewProps {
     variant?: 'edit' | 'follow' | 'following';
   };
 
+  // User Suggestions
+  userSuggestions?: {
+    users: Array<{
+      userId: string;
+      username: string;
+      fullName: string;
+      followerCount: number;
+      mutualFollowerCount?: number;
+      suggestionReason?: string;
+    }>;
+    loading?: boolean;
+    onFollowToggle: (userId: string) => void;
+    onUserClick: (userId: string) => void;
+    followingUserIds?: Set<string>;
+  };
+
   // Optional
   isOwnProfile?: boolean;
   emptyStateMessage?: string;
@@ -96,6 +113,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   onFetchMore,
   onSearchChange,
   actionButton,
+  userSuggestions,
   isOwnProfile = false,
   emptyStateMessage,
 }) => {
@@ -235,6 +253,41 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               >
                 {actionButton.label}
               </button>
+            </div>
+          )}
+
+          {/* User Suggestions Section */}
+          {userSuggestions && userSuggestions.users.length > 0 && (
+            <div className="mt-8">
+              <h2 className="text-lg font-semibold mb-4 text-left">
+                Suggested for you
+              </h2>
+
+              {userSuggestions.loading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                </div>
+              ) : (
+                <div className="overflow-x-auto scrollbar-hide">
+                  <div className="flex gap-3 pb-2">
+                    {userSuggestions.users.map((user) => (
+                      <div
+                        key={user.userId}
+                        className="flex-shrink-0 w-[160px]"
+                      >
+                        <UserSuggestionCard
+                          user={user}
+                          isFollowing={userSuggestions.followingUserIds?.has(
+                            user.userId
+                          )}
+                          onFollowToggle={userSuggestions.onFollowToggle}
+                          onUserClick={userSuggestions.onUserClick}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
