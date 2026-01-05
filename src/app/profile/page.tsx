@@ -3,7 +3,11 @@
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@apollo/client';
-import { CURRENT_USER, MY_RECIPE_LIST_QUERY } from '@/features/user/services/query';
+import {
+  CURRENT_USER,
+  MY_RECIPE_LIST_QUERY,
+  USER_SUGGESTION_LIST_QUERY,
+} from '@/features/user/services/query';
 import { client } from '@/lib/apollo-client';
 import { ProfileView } from '@/features/user/components/ProfileView';
 import useSnackbar from '@/core/hooks/useSnackbar';
@@ -12,9 +16,16 @@ export default function ProfilePage() {
   const router = useRouter();
   const { showError } = useSnackbar();
   const [searchQuery, setSearchQuery] = React.useState('');
+  const [followingUserIds, setFollowingUserIds] = React.useState<Set<string>>(
+    new Set()
+  );
 
   // Fetch current user
-  const { loading: userLoading, error: userError, data: userData } = useQuery(CURRENT_USER, {
+  const {
+    loading: userLoading,
+    error: userError,
+    data: userData,
+  } = useQuery(CURRENT_USER, {
     client,
     fetchPolicy: 'network-only',
   });
@@ -35,6 +46,19 @@ export default function ProfilePage() {
     fetchPolicy: 'network-only',
     notifyOnNetworkStatusChange: true,
   });
+
+  // Fetch user suggestions
+  const { loading: suggestionsLoading, data: suggestionsData } = useQuery(
+    USER_SUGGESTION_LIST_QUERY,
+    {
+      variables: {
+        limit: 10,
+        offset: 0,
+      },
+      skip: !userData?.currentUser,
+      fetchPolicy: 'network-only',
+    }
+  );
 
   // Handle token expired error
   useEffect(() => {
@@ -63,7 +87,11 @@ export default function ProfilePage() {
 
   const { username, fullname, image } = userData.currentUser;
   const recipes = recipesData?.myRecipeList?.recipes || [];
-  const meta = recipesData?.myRecipeList?.meta || { total: 0, hasNextPage: false };
+  const meta = recipesData?.myRecipeList?.meta || {
+    total: 0,
+    hasNextPage: false,
+  };
+  const suggestions = suggestionsData?.userSuggestionList?.users || [];
 
   const handleFetchMore = (cursor: string) => {
     fetchMore({
@@ -91,6 +119,23 @@ export default function ProfilePage() {
     router.push('/profile/edit');
   };
 
+  const handleFollowToggle = (userId: string) => {
+    setFollowingUserIds((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(userId)) {
+        newSet.delete(userId);
+      } else {
+        newSet.add(userId);
+      }
+      return newSet;
+    });
+    // TODO: Implement API call to follow/unfollow user
+  };
+
+  const handleUserClick = (userId: string) => {
+    router.push(`/users/${userId}`);
+  };
+
   return (
     <ProfileView
       username={username}
@@ -111,6 +156,13 @@ export default function ProfilePage() {
         label: 'Edit Profile',
         onClick: handleEditProfile,
         variant: 'edit',
+      }}
+      userSuggestions={{
+        users: suggestions,
+        loading: suggestionsLoading,
+        onFollowToggle: handleFollowToggle,
+        onUserClick: handleUserClick,
+        followingUserIds: followingUserIds,
       }}
       isOwnProfile={true}
     />

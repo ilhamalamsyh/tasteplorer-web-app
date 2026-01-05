@@ -137,3 +137,21 @@ export const USER_RECIPE_LIST_QUERY = gql`
     }
   }
 `;
+
+export const USER_SUGGESTION_LIST_QUERY = gql`
+  query UserSuggestionList($limit: Int, $offset: Int) {
+    userSuggestionList(limit: $limit, offset: $offset) {
+      users {
+        userId
+        suggestionScore
+        suggestionReason
+        mutualFollowerCount
+        followerCount
+        username
+        fullName
+      }
+      hasMore
+      totalCount
+    }
+  }
+`;
