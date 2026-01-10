@@ -64,10 +64,10 @@ const Header: React.FC = () => {
           </Link>
           {/* Nav */}
           <nav className="hidden md:flex flex-1 justify-center space-x-8">
-            <Link href="/" className={getLinkStyle('/')}>
+            <Link href="/feed" className={getLinkStyle('/feed')}>
               Home
             </Link>
-            <Link href="/explore" className={getLinkStyle('/explore')}>
+            <Link href="/" className={getLinkStyle('/')}>
               Explore
             </Link>
             <a

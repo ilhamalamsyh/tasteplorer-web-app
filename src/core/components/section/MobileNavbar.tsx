@@ -38,11 +38,11 @@ const MobileNavbar: React.FC = () => {
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white shadow-t-md p-2 border-t flex justify-around z-[90] isolate">
-      <Link href="/" className={getLinkStyle('/')}>
+      <Link href="/feed" className={getLinkStyle('/feed')}>
         <GoHome className="w-6 h-6" />
         <span className="text-xs">Home</span>
       </Link>
-      <Link href="/explore" className={getLinkStyle('/explore')}>
+      <Link href="/" className={getLinkStyle('/')}>
         <GoSearch className="w-6 h-6" />
         <span className="text-xs">Explore</span>
       </Link>

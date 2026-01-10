@@ -1,80 +1,128 @@
 'use client';
-import React, { useState, useEffect } from 'react';
-// import FeedSidebar from '@/core/components/FeedSidebar/FeedSidebar';
-import FeedPostCard from '@/core/components/FeedPostCard/FeedPostCard';
-import { feedPosts } from '@/core/data/feedPosts';
+import React from 'react';
+import Image from 'next/image';
 import '@/styles/tailwind.css';
+import { useRouter } from 'next/navigation';
+import { categories } from '@/core/data/categories';
+import { creators } from '@/core/data/creators';
+import { ingredients } from '@/core/data/ingredients';
+import { recipes as recipesData } from '@/core/data/recipes';
+import SectionDivider from '@/core/components/SectionDivider/SectionDivider';
+import RecipeSection from '@/core/components/RecipeSection/RecipeSection';
+import HorizontalScrollSection from '@/core/components/HorizontalScrollSection/HorizontalScrollSection';
+import Search from '@/core/components/field/Search';
 
-// Add shimmer animation style
-const shimmerStyle = `
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-.animate-shimmer {
-  animation: shimmer 1.5s infinite linear;
-  background-size: 200% 100%;
-}
-`;
+const HomePage = () => {
+  const router = useRouter();
+  const [recipesState, setRecipesState] = React.useState(recipesData);
+  const [openMenuIndex, setOpenMenuIndex] = React.useState<number | null>(null);
 
-const Home = () => {
-  const [showSkeleton, setShowSkeleton] = useState(true);
+  const handleCardClick = (title: string) => {
+    router.push(
+      `/recipes/${encodeURIComponent(title.replace(/\s+/g, '-').toLowerCase())}`
+    );
+  };
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowSkeleton(false);
-    }, 2000);
+  const handleBookmark = (idx: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setRecipesState((prev) =>
+      prev.map((r, i) =>
+        i === idx ? { ...r, isBookmarked: !r.isBookmarked } : r
+      )
+    );
+  };
 
-    return () => clearTimeout(timer);
-  }, []);
+  const handleMenu = (idx: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setOpenMenuIndex(idx === openMenuIndex ? null : idx);
+  };
 
   return (
-    <div className="flex flex-col w-full overflow-x-hidden">
-      <style>{shimmerStyle}</style>
-      <main className="flex justify-center w-full max-w-[1440px] mx-auto">
-        {/* Sidebar (desktop only, sticky) */}
-        {/* <aside className="hidden lg:block w-[380px] flex-shrink-0 py-8 pr-8">
-          <div className="sticky top-24">
-            <FeedSidebar />
-          </div>
-        </aside> */}
-        {/* Feed */}
-        <section className="flex flex-col w-full max-w-2xl py-2 gap-4 px px-0 sm:px-4 lg:px-0">
-          {showSkeleton
-            ? Array.from({ length: 5 }).map((_, idx) => (
-                <div
-                  key={idx}
-                  className="bg-[#f6f6f6] rounded-2xl w-full h-48 mb-2 overflow-hidden relative"
-                >
-                  <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-r from-[#f6f6f6] via-[#ececec] to-[#f6f6f6] animate-shimmer" />
-                  <div className="flex flex-col h-full justify-between p-5">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="w-10 h-10 rounded-full bg-gray-200" />
-                      <div className="flex-1">
-                        <div className="h-4 w-24 bg-gray-200 rounded mb-2" />
-                        <div className="h-3 w-16 bg-gray-100 rounded" />
-                      </div>
-                    </div>
-                    <div className="h-5 w-3/4 bg-gray-200 rounded mb-2" />
-                    <div className="h-4 w-1/2 bg-gray-100 rounded mb-4" />
-                    <div className="flex gap-2 mt-auto">
-                      <div className="h-8 w-20 bg-gray-200 rounded" />
-                      <div className="h-8 w-20 bg-gray-100 rounded" />
-                    </div>
-                  </div>
-                </div>
-              ))
-            : feedPosts.map((post) => (
-                <FeedPostCard
-                  key={post.id}
-                  post={post}
-                  className="shadow-none border-none"
+    <main className="flex-grow bg-white min-h-screen">
+      {/* Hero Section */}
+      <section className="w-full bg-primary text-white py-16 px-4 md:px-0 flex flex-col items-center justify-center text-center space-y-6">
+        <h1 className="text-4xl md:text-5xl font-bold font-poppins">
+          Food Your Way
+        </h1>
+        <p className="text-lg md:text-xl max-w-2xl mx-auto">
+          Welcome to Tasteplorer, your go-to app for recipe saving, shopping,
+          and meal planning. Discover, save, and share your favorite recipes!
+        </p>
+        <Search />
+      </section>
+      <div className="max-w-5xl mx-auto w-full bg-white">
+        {/* Categories */}
+        <SectionDivider />
+        <HorizontalScrollSection
+          title="Recipe Categories"
+          sectionWidth="max-w-5xl"
+        >
+          {categories.map((cat) => (
+            <div
+              key={cat.name}
+              className="flex flex-col items-center min-w-[110px] bg-white rounded-xl shadow-sm p-5 hover:bg-primary hover:text-white transition cursor-pointer border border-gray-100"
+            >
+              <span className="text-3xl mb-2">{cat.icon}</span>
+              <span className="font-semibold text-center">{cat.name}</span>
+            </div>
+          ))}
+        </HorizontalScrollSection>
+        {/* Creators */}
+        <SectionDivider />
+        <HorizontalScrollSection
+          title="Popular Creators"
+          sectionWidth="max-w-5xl"
+        >
+          {creators.map((creator) => (
+            <div
+              key={creator.name}
+              className="flex flex-col items-center min-w-[130px] bg-white rounded-xl shadow-sm p-5 hover:bg-primary hover:text-white transition cursor-pointer border border-gray-100"
+            >
+              {creator.avatar && creator.avatar.trim() !== '' ? (
+                <Image
+                  src={creator.avatar}
+                  alt={creator.name}
+                  width={64}
+                  height={64}
+                  className="w-16 h-16 rounded-full mb-2 object-cover"
                 />
-              ))}
-        </section>
-      </main>
-    </div>
+              ) : (
+                <div className="w-16 h-16 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 font-bold text-lg mb-2">
+                  {creator.name.charAt(0).toUpperCase()}
+                </div>
+              )}
+              <span className="font-semibold text-center">{creator.name}</span>
+            </div>
+          ))}
+        </HorizontalScrollSection>
+        {/* Ingredients */}
+        <SectionDivider />
+        <HorizontalScrollSection
+          title="Popular Ingredients"
+          sectionWidth="max-w-5xl"
+        >
+          {ingredients.map((ing) => (
+            <div
+              key={ing.name}
+              className="flex flex-col items-center min-w-[110px] bg-white rounded-xl shadow-sm p-5 hover:bg-primary hover:text-white transition cursor-pointer border border-gray-100"
+            >
+              <span className="text-3xl mb-2">{ing.icon}</span>
+              <span className="font-semibold text-center">{ing.name}</span>
+            </div>
+          ))}
+        </HorizontalScrollSection>
+        {/* Recipes */}
+        <RecipeSection
+          recipes={recipesState}
+          onCardClick={handleCardClick}
+          onBookmark={handleBookmark}
+          onMenu={handleMenu}
+          openMenuIndex={openMenuIndex}
+          sectionTitle="Discover recipes"
+        />
+      </div>
+    </main>
   );
 };
 
-export default Home;
+export default HomePage;
