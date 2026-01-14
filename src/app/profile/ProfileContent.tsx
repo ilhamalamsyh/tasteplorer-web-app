@@ -7,6 +7,7 @@ import {
   CURRENT_USER,
   MY_RECIPE_LIST_QUERY,
   USER_SUGGESTION_LIST_QUERY,
+  USER_FEEDS_QUERY,
 } from '@/features/user/services/query';
 import { client } from '@/lib/apollo-client';
 import { ProfileView } from '@/features/user/components/ProfileView';
@@ -18,6 +19,9 @@ export default function ProfileContent() {
   const [searchQuery, setSearchQuery] = React.useState('');
   const [followingUserIds, setFollowingUserIds] = React.useState<Set<string>>(
     new Set()
+  );
+  const [activeTab, setActiveTab] = React.useState<'posts' | 'recipes'>(
+    'posts'
   );
 
   // Fetch current user
@@ -35,14 +39,31 @@ export default function ProfileContent() {
     loading: recipesLoading,
     error: recipesError,
     data: recipesData,
-    fetchMore,
+    fetchMore: fetchMoreRecipes,
   } = useQuery(MY_RECIPE_LIST_QUERY, {
     variables: {
       search: searchQuery || undefined,
       limit: 24,
       after: undefined,
     },
-    skip: !userData?.currentUser,
+    skip: !userData?.currentUser || activeTab !== 'recipes',
+    fetchPolicy: 'network-only',
+    notifyOnNetworkStatusChange: true,
+  });
+
+  // Fetch user's feeds/posts
+  const {
+    loading: feedsLoading,
+    error: feedsError,
+    data: feedsData,
+    fetchMore: fetchMoreFeeds,
+  } = useQuery(USER_FEEDS_QUERY, {
+    variables: {
+      userId: userData?.currentUser?.id ? parseInt(userData.currentUser.id) : 0,
+      cursor: null,
+      limit: 10,
+    },
+    skip: !userData?.currentUser || activeTab !== 'posts',
     fetchPolicy: 'network-only',
     notifyOnNetworkStatusChange: true,
   });
@@ -81,6 +102,13 @@ export default function ProfileContent() {
     }
   }, [userError, showError, router]);
 
+  // Handle feeds error
+  useEffect(() => {
+    if (feedsError) {
+      showError(feedsError.message || 'Failed to load posts');
+    }
+  }, [feedsError, showError]);
+
   if (userLoading) return <p>Loading...</p>;
   if (userError && !userError.message.toLowerCase().includes('token'))
     return <p>Error: {userError.message}</p>;
@@ -91,14 +119,16 @@ export default function ProfileContent() {
 
   const { username, fullname, image } = userData.currentUser;
   const recipes = recipesData?.myRecipeList?.recipes || [];
-  const meta = recipesData?.myRecipeList?.meta || {
+  const recipesMeta = recipesData?.myRecipeList?.meta || {
     total: 0,
     hasNextPage: false,
   };
+  const feeds = feedsData?.userFeeds?.feeds || [];
+  const feedsHasMore = feedsData?.userFeeds?.hasMore || false;
   const suggestions = suggestionsData?.userSuggestionList?.users || [];
 
-  const handleFetchMore = (cursor: string) => {
-    fetchMore({
+  const handleFetchMoreRecipes = (cursor: string) => {
+    fetchMoreRecipes({
       variables: { after: cursor },
       updateQuery: (prev, { fetchMoreResult }) => {
         if (!fetchMoreResult) return prev;
@@ -108,6 +138,27 @@ export default function ProfileContent() {
             recipes: [
               ...prev.myRecipeList.recipes,
               ...fetchMoreResult.myRecipeList.recipes,
+            ],
+          },
+        };
+      },
+    });
+  };
+
+  const handleFetchMoreFeeds = () => {
+    const nextCursor = feedsData?.userFeeds?.nextCursor;
+    if (!nextCursor || !feedsHasMore) return;
+
+    fetchMoreFeeds({
+      variables: { cursor: nextCursor },
+      updateQuery: (prev, { fetchMoreResult }) => {
+        if (!fetchMoreResult) return prev;
+        return {
+          userFeeds: {
+            ...fetchMoreResult.userFeeds,
+            feeds: [
+              ...prev.userFeeds.feeds,
+              ...fetchMoreResult.userFeeds.feeds,
             ],
           },
         };
@@ -140,21 +191,25 @@ export default function ProfileContent() {
     router.push(`/users/${userId}`);
   };
 
+  const handleTabChange = (tab: 'posts' | 'recipes') => {
+    setActiveTab(tab);
+  };
+
   return (
     <ProfileView
       username={username}
       fullname={fullname}
       image={image}
       stats={{
-        posts: meta.total,
+        posts: recipesMeta.total,
         following: 0,
         followers: 0,
       }}
       recipes={recipes}
       recipesLoading={recipesLoading}
       recipesError={recipesError}
-      recipesMeta={meta}
-      onFetchMore={handleFetchMore}
+      recipesMeta={recipesMeta}
+      onFetchMore={handleFetchMoreRecipes}
       onSearchChange={handleSearchChange}
       actionButton={{
         label: 'Edit Profile',
@@ -168,6 +223,12 @@ export default function ProfileContent() {
         onUserClick: handleUserClick,
         followingUserIds: followingUserIds,
       }}
+      feeds={feeds}
+      feedsLoading={feedsLoading}
+      feedsHasMore={feedsHasMore}
+      onFetchMoreFeeds={handleFetchMoreFeeds}
+      activeTab={activeTab}
+      onTabChange={handleTabChange}
       isOwnProfile={true}
     />
   );
