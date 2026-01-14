@@ -21,3 +21,34 @@ export const CREATE_FEED_MUTATION = gql`
     }
   }
 `;
+
+export const UPDATE_FEED_MUTATION = gql`
+  mutation UpdateFeed($id: ID!, $input: UpdateFeedInput!) {
+    updateFeed(id: $id, input: $input) {
+      id
+      user {
+        id
+        username
+        profileImageUrl
+      }
+      recipeId
+      content
+      createdAt
+      updatedAt
+      images {
+        id
+        imageUrl
+        position
+      }
+    }
+  }
+`;
+
+export const DELETE_FEED_MUTATION = gql`
+  mutation DeleteFeed($id: ID!) {
+    deleteFeed(id: $id) {
+      success
+      message
+    }
+  }
+`;

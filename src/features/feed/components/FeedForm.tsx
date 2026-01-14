@@ -1,8 +1,12 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
-import { useMutation } from '@apollo/client';
-import { CREATE_FEED_MUTATION } from '@/features/feed/services/mutation';
+import React, { useState, useRef, useEffect } from 'react';
+import { useMutation, useQuery } from '@apollo/client';
+import {
+  CREATE_FEED_MUTATION,
+  UPDATE_FEED_MUTATION,
+} from '@/features/feed/services/mutation';
+import { GET_FEED } from '@/features/feed/services/query';
 import Modal from '@/core/components/modal/Modal';
 import { HiOutlinePhoto, HiOutlineXMark } from 'react-icons/hi2';
 import { MdOutlineRestaurantMenu } from 'react-icons/md';
@@ -15,18 +19,27 @@ interface FeedFormProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess?: () => void;
+  feedId?: string; // For edit mode
+  mode?: 'create' | 'edit';
 }
 
 interface ImagePreview {
-  file: File;
+  file?: File;
   preview: string;
   position: number;
-  uploadedUrl?: string; // URL from Cloudinary after upload
-  uploading?: boolean; // Upload status for this image
-  error?: string; // Error message if upload failed
+  uploadedUrl?: string;
+  uploading?: boolean;
+  error?: string;
+  id?: string; // For existing images from server
 }
 
-const FeedForm: React.FC<FeedFormProps> = ({ isOpen, onClose, onSuccess }) => {
+const FeedForm: React.FC<FeedFormProps> = ({
+  isOpen,
+  onClose,
+  onSuccess,
+  feedId,
+  mode = 'create',
+}) => {
   const { user } = useAuth();
   const [content, setContent] = useState('');
   const [images, setImages] = useState<ImagePreview[]>([]);
@@ -42,9 +55,38 @@ const FeedForm: React.FC<FeedFormProps> = ({ isOpen, onClose, onSuccess }) => {
   // Use FEED folder for feed images
   const { uploadImage } = useImageUpload('FEED');
 
+  // Fetch feed data for edit mode
+  const { data: feedData, loading: feedLoading } = useQuery(GET_FEED, {
+    variables: { id: feedId },
+    skip: !feedId || mode !== 'edit',
+    fetchPolicy: 'network-only',
+  });
+
+  // Load existing feed data when in edit mode
+  useEffect(() => {
+    if (mode === 'edit' && feedData?.feed) {
+      const feed = feedData.feed;
+      setContent(feed.content || '');
+
+      // Convert existing images to ImagePreview format
+      if (feed.images && feed.images.length > 0) {
+        const existingImages: ImagePreview[] = feed.images.map(
+          (img: { id: string; imageUrl: string; position: number }) => ({
+            id: img.id,
+            preview: img.imageUrl,
+            uploadedUrl: img.imageUrl,
+            position: img.position,
+            uploading: false,
+          })
+        );
+        setImages(existingImages);
+      }
+    }
+  }, [mode, feedData]);
+
   const [createFeed] = useMutation(CREATE_FEED_MUTATION, {
     onCompleted: () => {
-      showSuccess();
+      showSuccess('create');
       handleClose();
       if (onSuccess) onSuccess();
     },
@@ -54,9 +96,25 @@ const FeedForm: React.FC<FeedFormProps> = ({ isOpen, onClose, onSuccess }) => {
     },
   });
 
-  const showSuccess = () => {
+  const [updateFeed] = useMutation(UPDATE_FEED_MUTATION, {
+    onCompleted: () => {
+      showSuccess('update');
+      handleClose();
+      if (onSuccess) onSuccess();
+    },
+    onError: (error) => {
+      showError(error.message || 'Failed to update post');
+      setIsSubmitting(false);
+    },
+  });
+
+  const showSuccess = (action: 'create' | 'update') => {
+    const message =
+      action === 'create'
+        ? 'Post created successfully!'
+        : 'Post updated successfully!';
+    console.log(message);
     // TODO: Implement success snackbar if needed
-    console.log('Post created successfully!');
   };
 
   const handleClose = () => {
@@ -104,7 +162,7 @@ const FeedForm: React.FC<FeedFormProps> = ({ isOpen, onClose, onSuccess }) => {
     tempImages.forEach(async (tempImage, index) => {
       try {
         console.log(`📤 Uploading image ${index + 1}/${tempImages.length}...`);
-        const uploadedUrl = await uploadImage(tempImage.file);
+        const uploadedUrl = await uploadImage(tempImage.file!);
 
         if (uploadedUrl) {
           // Update image with uploaded URL
@@ -176,28 +234,39 @@ const FeedForm: React.FC<FeedFormProps> = ({ isOpen, onClose, onSuccess }) => {
     setIsSubmitting(true);
 
     try {
-      // Use already uploaded URLs
-      const imageInputs = images
-        .filter((img) => img.uploadedUrl) // Only include successfully uploaded images
-        .map((img, index) => ({
-          imageUrl: img.uploadedUrl!,
-          position: index + 1,
-        }));
-
-      console.log('📝 Creating feed with images:', imageInputs);
-
-      // Create feed with uploaded image URLs
-      await createFeed({
-        variables: {
-          input: {
-            content: content.trim(),
-            recipeId: null, // TODO: Implement recipe attachment
-            images: imageInputs.length > 0 ? imageInputs : undefined,
+      if (mode === 'edit' && feedId) {
+        // Update existing feed
+        await updateFeed({
+          variables: {
+            id: feedId,
+            input: {
+              content: content.trim(),
+            },
           },
-        },
-      });
+        });
+      } else {
+        // Create new feed
+        const imageInputs = images
+          .filter((img) => img.uploadedUrl)
+          .map((img, index) => ({
+            imageUrl: img.uploadedUrl!,
+            position: index + 1,
+          }));
+
+        console.log('📝 Creating feed with images:', imageInputs);
+
+        await createFeed({
+          variables: {
+            input: {
+              content: content.trim(),
+              recipeId: null,
+              images: imageInputs.length > 0 ? imageInputs : undefined,
+            },
+          },
+        });
+      }
     } catch (error) {
-      console.error('Error creating post:', error);
+      console.error('Error submitting post:', error);
       setIsSubmitting(false);
     }
   };
@@ -217,13 +286,26 @@ const FeedForm: React.FC<FeedFormProps> = ({ isOpen, onClose, onSuccess }) => {
       .toUpperCase();
   };
 
+  // Show loading state when fetching feed data
+  if (mode === 'edit' && feedLoading) {
+    return (
+      <Modal isOpen={isOpen} onClose={handleClose}>
+        <div className="p-6 flex items-center justify-center min-h-[300px]">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        </div>
+      </Modal>
+    );
+  }
+
   return (
     <>
       <Modal isOpen={isOpen} onClose={handleClose}>
         <div className="p-6">
           {/* Header */}
           <div className="mb-6">
-            <h2 className="text-xl font-bold text-gray-900">Create Post</h2>
+            <h2 className="text-xl font-bold text-gray-900">
+              {mode === 'edit' ? 'Edit Post' : 'Create Post'}
+            </h2>
           </div>
 
           {/* User Info */}
@@ -385,8 +467,10 @@ const FeedForm: React.FC<FeedFormProps> = ({ isOpen, onClose, onSuccess }) => {
               {isSubmitting ? (
                 <span className="flex items-center gap-2">
                   <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  Posting...
+                  {mode === 'edit' ? 'Updating...' : 'Posting...'}
                 </span>
+              ) : mode === 'edit' ? (
+                'Update'
               ) : (
                 'Post'
               )}
