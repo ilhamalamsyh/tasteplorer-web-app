@@ -117,22 +117,24 @@ const MobileNavbar: React.FC = () => {
           <GoHome className="w-6 h-6" />
           <span className="text-xs">Home</span>
         </Link>
-        <button
-          onClick={handleCreateClick}
-          className="flex flex-col items-center text-gray-600 hover:text-primary/80 relative -translate-y-0"
-          aria-label="Create content"
-        >
-          <div
-            className={`w-11 h-11 rounded-full flex items-center justify-center absolute -top-7 shadow-lg transition-all ${
-              showCreateMenu
-                ? 'bg-primary text-white scale-110'
-                : 'bg-primary text-white hover:bg-primary/90'
-            }`}
+        {!loading && user && (
+          <button
+            onClick={handleCreateClick}
+            className="flex flex-col items-center text-gray-600 hover:text-primary/80 relative -translate-y-0"
+            aria-label="Create content"
           >
-            <LuPlus className="w-6 h-6 stroke-[2.5]" />
-          </div>
-          <span className="text-xs invisible">Create</span>
-        </button>
+            <div
+              className={`w-11 h-11 rounded-full flex items-center justify-center absolute -top-7 shadow-lg transition-all ${
+                showCreateMenu
+                  ? 'bg-primary text-white scale-110'
+                  : 'bg-primary text-white hover:bg-primary/90'
+              }`}
+            >
+              <LuPlus className="w-6 h-6 stroke-[2.5]" />
+            </div>
+            <span className="text-xs invisible">Create</span>
+          </button>
+        )}
         <Link href="/" className={getLinkStyle('/')}>
           <GoSearch className="w-6 h-6" />
           <span className="text-xs">Explore</span>

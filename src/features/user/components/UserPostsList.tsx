@@ -81,22 +81,20 @@ export const UserPostsList: React.FC<UserPostsListProps> = ({
       <div className="flex flex-col items-center justify-center py-12">
         <div className="text-6xl mb-4">📝</div>
         <h2 className="text-xl font-semibold mb-2">No posts yet</h2>
-        <p className="text-gray-500">
-          Start sharing your culinary journey!
-        </p>
+        <p className="text-gray-500">Start sharing your culinary journey!</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4">
+    <div className="max-w-2xl mx-auto space-y-4">
       {feeds.map((feed) => (
         <article
           key={feed.id}
           className="bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-shadow"
         >
           {/* Header */}
-          <div className="flex items-center gap-3 px-5 pt-5 pb-3">
+          <div className="flex items-center gap-3 px-4 pt-4 pb-2">
             {feed.user.profileImageUrl ? (
               <img
                 src={feed.user.profileImageUrl}
@@ -110,10 +108,10 @@ export const UserPostsList: React.FC<UserPostsListProps> = ({
             )}
             <div>
               <div className="flex items-center gap-2">
-                <span className="font-semibold text-gray-900 text-base">
+                <span className="font-semibold text-gray-900 text-sm">
                   {feed.user.username}
                 </span>
-                <span className="text-sm text-gray-400">
+                <span className="text-xs text-gray-400">
                   · {formatTime(feed.createdAt)}
                 </span>
               </div>
@@ -121,15 +119,15 @@ export const UserPostsList: React.FC<UserPostsListProps> = ({
           </div>
 
           {/* Content */}
-          <div className="px-5 pb-3">
-            <p className="text-gray-800 text-base leading-relaxed whitespace-pre-line break-words">
+          <div className="px-4 pb-2">
+            <p className="text-gray-800 text-sm leading-relaxed whitespace-pre-line break-words">
               {feed.content}
             </p>
           </div>
 
           {/* Images */}
           {feed.images && feed.images.length > 0 && (
-            <div className="w-full aspect-[4/3] bg-gray-100 overflow-hidden">
+            <div className="w-full aspect-video bg-gray-100 overflow-hidden">
               <img
                 src={feed.images[0].imageUrl}
                 alt="Post"
@@ -139,7 +137,7 @@ export const UserPostsList: React.FC<UserPostsListProps> = ({
           )}
 
           {/* Actions placeholder */}
-          <div className="px-5 py-3 border-t border-gray-50">
+          <div className="px-4 py-2 border-t border-gray-50">
             <div className="flex items-center gap-6 text-gray-500">
               <button className="text-sm hover:text-primary transition">
                 Like

@@ -110,37 +110,42 @@ const Header: React.FC = () => {
             <Link href="/feed" className={getLinkStyle('/feed')}>
               Home
             </Link>
-            <div className="relative" ref={addMenuRef}>
-              <button onClick={handleAddClick} className={getLinkStyle('/add')}>
-                Add
-              </button>
+            {!loading && user && (
+              <div className="relative" ref={addMenuRef}>
+                <button
+                  onClick={handleAddClick}
+                  className={getLinkStyle('/add')}
+                >
+                  Add
+                </button>
 
-              {/* Add Menu Dropdown */}
-              {showAddMenu && (
-                <div className="absolute top-full mt-2 right-0 bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-                  <div className="py-2 min-w-[200px]">
-                    <button
-                      onClick={handleCreatePost}
-                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
-                    >
-                      <HiOutlinePencilSquare className="w-5 h-5 text-gray-700 flex-shrink-0" />
-                      <span className="text-sm font-medium text-gray-900">
-                        Create a post
-                      </span>
-                    </button>
-                    <button
-                      onClick={handleCreateRecipe}
-                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
-                    >
-                      <HiOutlinePlusCircle className="w-5 h-5 text-gray-700 flex-shrink-0" />
-                      <span className="text-sm font-medium text-gray-900">
-                        Create a new recipe
-                      </span>
-                    </button>
+                {/* Add Menu Dropdown */}
+                {showAddMenu && (
+                  <div className="absolute top-full mt-2 right-0 bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="py-2 min-w-[200px]">
+                      <button
+                        onClick={handleCreatePost}
+                        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
+                      >
+                        <HiOutlinePencilSquare className="w-5 h-5 text-gray-700 flex-shrink-0" />
+                        <span className="text-sm font-medium text-gray-900">
+                          Create a post
+                        </span>
+                      </button>
+                      <button
+                        onClick={handleCreateRecipe}
+                        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
+                      >
+                        <HiOutlinePlusCircle className="w-5 h-5 text-gray-700 flex-shrink-0" />
+                        <span className="text-sm font-medium text-gray-900">
+                          Create a new recipe
+                        </span>
+                      </button>
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
+            )}
             <Link href="/" className={getLinkStyle('/')}>
               Explore
             </Link>
