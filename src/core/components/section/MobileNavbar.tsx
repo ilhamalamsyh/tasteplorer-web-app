@@ -6,12 +6,14 @@ import { LuUserRound, LuPlus } from 'react-icons/lu';
 import { HiOutlinePencilSquare, HiOutlinePlusCircle } from 'react-icons/hi2';
 import { useAuth } from '@/context/AuthContext';
 import { useNavigation } from '@/context/NavigationContext';
+import FeedForm from '@/features/feed/components/FeedForm';
 
 const MobileNavbar: React.FC = () => {
   const pathname = usePathname();
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
   const [showCreateMenu, setShowCreateMenu] = useState(false);
+  const [showFeedForm, setShowFeedForm] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const { user, loading } = useAuth();
   const { setPreviousPath } = useNavigation();
@@ -56,13 +58,19 @@ const MobileNavbar: React.FC = () => {
 
   const handleCreatePost = () => {
     setShowCreateMenu(false);
-    // TODO: Navigate to create post page or open create post modal
-    console.log('Create post clicked');
+    setShowFeedForm(true);
   };
 
   const handleCreateRecipe = () => {
     setShowCreateMenu(false);
     router.push('/recipes');
+  };
+
+  const handleFeedFormSuccess = () => {
+    // Refresh the feed page if we're on it
+    if (pathname === '/feed') {
+      router.refresh();
+    }
   };
 
   const getLinkStyle = (path: string) => {
@@ -148,6 +156,14 @@ const MobileNavbar: React.FC = () => {
           <span className="text-xs">Profile</span>
         </a>
       </nav>
+
+      {showFeedForm && (
+        <FeedForm
+          isOpen={showFeedForm}
+          onClose={() => setShowFeedForm(false)}
+          onSuccess={handleFeedFormSuccess}
+        />
+      )}
     </>
   );
 };

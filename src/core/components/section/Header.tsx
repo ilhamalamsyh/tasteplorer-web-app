@@ -5,11 +5,13 @@ import { HiOutlinePencilSquare, HiOutlinePlusCircle } from 'react-icons/hi2';
 import { useAuth } from '@/context/AuthContext';
 import { useNavigation } from '@/context/NavigationContext';
 import LoginModal from '@/features/auth/components/LoginModal';
+import FeedForm from '@/features/feed/components/FeedForm';
 
 const Header: React.FC = () => {
   const { user, loading } = useAuth();
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showAddMenu, setShowAddMenu] = useState(false);
+  const [showFeedForm, setShowFeedForm] = useState(false);
   const addMenuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const pathname = usePathname();
@@ -78,13 +80,19 @@ const Header: React.FC = () => {
 
   const handleCreatePost = () => {
     setShowAddMenu(false);
-    // TODO: Navigate to create post page or open create post modal
-    console.log('Create post clicked');
+    setShowFeedForm(true);
   };
 
   const handleCreateRecipe = () => {
     setShowAddMenu(false);
     router.push('/recipes');
+  };
+
+  const handleFeedFormSuccess = () => {
+    // Refresh the feed page if we're on it
+    if (pathname === '/feed') {
+      router.refresh();
+    }
   };
 
   // Helper for fallback initials
@@ -186,6 +194,13 @@ const Header: React.FC = () => {
         </div>
       </header>
       <LoginModal isOpen={showLoginModal} onClose={handleCloseLoginModal} />
+      {showFeedForm && (
+        <FeedForm
+          isOpen={showFeedForm}
+          onClose={() => setShowFeedForm(false)}
+          onSuccess={handleFeedFormSuccess}
+        />
+      )}
     </>
   );
 };
