@@ -348,6 +348,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               loading={feedsLoading}
               hasMore={feedsHasMore}
               onFetchMore={onFetchMoreFeeds}
+              isOwnProfile={isOwnProfile}
             />
           )}
 

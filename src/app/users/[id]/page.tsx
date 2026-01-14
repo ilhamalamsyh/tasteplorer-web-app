@@ -4,10 +4,9 @@ import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useQuery } from '@apollo/client';
-import {
-  USER_PROFILE_QUERY,
-  USER_RECIPE_LIST_QUERY,
-} from '@/features/user/services/query';
+import { USER_PROFILE_QUERY } from '@/features/user/services/query';
+import { USER_RECIPE_LIST_QUERY } from '@/features/recipe/services/query';
+import { USER_FEEDS_QUERY } from '@/features/feed/services/query';
 import { ProfileView } from '@/features/user/components/ProfileView';
 import useSnackbar from '@/core/hooks/useSnackbar';
 
@@ -20,6 +19,7 @@ export default function UserDetailPage({ params }: UserDetailPageProps) {
   const [userId, setUserId] = useState<string | null>(null);
   const [userIdInt, setUserIdInt] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState<'posts' | 'recipes'>('recipes');
   const { showError } = useSnackbar();
 
   // Resolve params
@@ -46,13 +46,29 @@ export default function UserDetailPage({ params }: UserDetailPageProps) {
     loading: recipesLoading,
     error: recipesError,
     data: recipesData,
-    fetchMore,
+    fetchMore: fetchMoreRecipes,
   } = useQuery(USER_RECIPE_LIST_QUERY, {
     variables: {
       userId: userIdInt,
       search: searchQuery || undefined,
       limit: 24,
       after: undefined,
+    },
+    skip: !userIdInt,
+    fetchPolicy: 'network-only',
+    notifyOnNetworkStatusChange: true,
+  });
+
+  // Fetch user's feeds
+  const {
+    loading: feedsLoading,
+    data: feedsData,
+    fetchMore: fetchMoreFeeds,
+  } = useQuery(USER_FEEDS_QUERY, {
+    variables: {
+      userId: userIdInt,
+      cursor: null,
+      limit: 10,
     },
     skip: !userIdInt,
     fetchPolicy: 'network-only',
@@ -95,13 +111,17 @@ export default function UserDetailPage({ params }: UserDetailPageProps) {
   const { username, fullname, image, followers, following } =
     userData.userProfile;
   const recipes = recipesData?.userRecipeList?.recipes || [];
-  const meta = recipesData?.userRecipeList?.meta || {
+  const recipesMeta = recipesData?.userRecipeList?.meta || {
     total: 0,
     hasNextPage: false,
+    endCursor: null,
   };
 
-  const handleFetchMore = (cursor: string) => {
-    fetchMore({
+  const feeds = feedsData?.userFeeds?.feeds || [];
+  const feedsHasMore = feedsData?.userFeeds?.hasMore || false;
+
+  const handleFetchMoreRecipes = (cursor: string) => {
+    fetchMoreRecipes({
       variables: { after: cursor },
       updateQuery: (prev, { fetchMoreResult }) => {
         if (!fetchMoreResult) return prev;
@@ -118,6 +138,29 @@ export default function UserDetailPage({ params }: UserDetailPageProps) {
     });
   };
 
+  const handleFetchMoreFeeds = () => {
+    if (!feedsHasMore || feedsLoading) return;
+
+    const nextCursor = feedsData?.userFeeds?.nextCursor;
+    if (!nextCursor) return;
+
+    fetchMoreFeeds({
+      variables: { cursor: nextCursor },
+      updateQuery: (prev, { fetchMoreResult }) => {
+        if (!fetchMoreResult) return prev;
+        return {
+          userFeeds: {
+            ...fetchMoreResult.userFeeds,
+            feeds: [
+              ...prev.userFeeds.feeds,
+              ...fetchMoreResult.userFeeds.feeds,
+            ],
+          },
+        };
+      },
+    });
+  };
+
   const handleSearchChange = (query: string) => {
     setSearchQuery(query);
   };
@@ -127,21 +170,25 @@ export default function UserDetailPage({ params }: UserDetailPageProps) {
     console.log('Follow user:', userId);
   };
 
+  const handleTabChange = (tab: 'posts' | 'recipes') => {
+    setActiveTab(tab);
+  };
+
   return (
     <ProfileView
       username={username}
       fullname={fullname}
       image={image}
       stats={{
-        posts: meta.total,
+        posts: feeds.length,
         following: following.total,
         followers: followers.total,
       }}
       recipes={recipes}
       recipesLoading={recipesLoading}
       recipesError={recipesError}
-      recipesMeta={meta}
-      onFetchMore={handleFetchMore}
+      recipesMeta={recipesMeta}
+      onFetchMore={handleFetchMoreRecipes}
       onSearchChange={handleSearchChange}
       actionButton={{
         label: 'Follow',
@@ -150,6 +197,12 @@ export default function UserDetailPage({ params }: UserDetailPageProps) {
       }}
       isOwnProfile={false}
       emptyStateMessage="No recipes yet."
+      feeds={feeds}
+      feedsLoading={feedsLoading}
+      feedsHasMore={feedsHasMore}
+      onFetchMoreFeeds={handleFetchMoreFeeds}
+      activeTab={activeTab}
+      onTabChange={handleTabChange}
     />
   );
 }

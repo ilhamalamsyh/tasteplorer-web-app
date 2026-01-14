@@ -21,3 +21,29 @@ export const GET_FEED = gql`
     }
   }
 `;
+
+export const USER_FEEDS_QUERY = gql`
+  query UserFeeds($userId: Int!, $cursor: String, $limit: Int) {
+    userFeeds(userId: $userId, cursor: $cursor, limit: $limit) {
+      feeds {
+        id
+        user {
+          id
+          username
+          profileImageUrl
+        }
+        recipeId
+        content
+        createdAt
+        updatedAt
+        images {
+          id
+          imageUrl
+          position
+        }
+      }
+      nextCursor
+      hasMore
+    }
+  }
+`;

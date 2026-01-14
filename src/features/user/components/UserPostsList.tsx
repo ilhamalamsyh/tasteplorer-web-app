@@ -37,6 +37,7 @@ interface UserPostsListProps {
   loading: boolean;
   hasMore: boolean;
   onFetchMore?: () => void;
+  isOwnProfile?: boolean; // Add prop to differentiate own profile vs others
 }
 
 export const UserPostsList: React.FC<UserPostsListProps> = ({
@@ -44,6 +45,7 @@ export const UserPostsList: React.FC<UserPostsListProps> = ({
   loading,
   hasMore,
   onFetchMore,
+  isOwnProfile,
 }) => {
   const loaderRef = useRef<HTMLDivElement | null>(null);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
@@ -172,8 +174,14 @@ export const UserPostsList: React.FC<UserPostsListProps> = ({
     return (
       <div className="flex flex-col items-center justify-center py-12">
         <div className="text-6xl mb-4">📝</div>
-        <h2 className="text-xl font-semibold mb-2">No posts yet</h2>
-        <p className="text-gray-500">Start sharing your culinary journey!</p>
+        <h2 className="text-xl font-semibold mb-2">
+          {isOwnProfile ? 'No posts yet' : 'No activity yet'}
+        </h2>
+        <p className="text-gray-500">
+          {isOwnProfile
+            ? 'Start sharing your culinary journey!'
+            : "This user hasn't posted anything yet."}
+        </p>
       </div>
     );
   }
