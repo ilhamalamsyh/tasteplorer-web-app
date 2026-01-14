@@ -9,6 +9,7 @@ import { MdOutlineRestaurantMenu } from 'react-icons/md';
 import useSnackbar from '@/core/hooks/useSnackbar';
 import Snackbar from '@/core/components/snackbar/Snackbar';
 import { useAuth } from '@/context/AuthContext';
+import { useImageUpload } from '@/core/hooks/useImageUpload';
 
 interface FeedFormProps {
   isOpen: boolean;
@@ -20,6 +21,9 @@ interface ImagePreview {
   file: File;
   preview: string;
   position: number;
+  uploadedUrl?: string; // URL from Cloudinary after upload
+  uploading?: boolean; // Upload status for this image
+  error?: string; // Error message if upload failed
 }
 
 const FeedForm: React.FC<FeedFormProps> = ({ isOpen, onClose, onSuccess }) => {
@@ -34,6 +38,9 @@ const FeedForm: React.FC<FeedFormProps> = ({ isOpen, onClose, onSuccess }) => {
     showError,
     handleCloseSnackbar,
   } = useSnackbar();
+
+  // Use FEED folder for feed images
+  const { uploadImage } = useImageUpload('FEED');
 
   const [createFeed] = useMutation(CREATE_FEED_MUTATION, {
     onCompleted: () => {
@@ -68,40 +75,72 @@ const FeedForm: React.FC<FeedFormProps> = ({ isOpen, onClose, onSuccess }) => {
     }
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
 
-    const newImages: ImagePreview[] = [];
     const maxImages = 4;
+    const filesToUpload = Array.from(files).slice(0, maxImages - images.length);
 
-    Array.from(files).forEach((file) => {
-      if (images.length + newImages.length >= maxImages) return;
+    // Create temporary image previews with uploading state
+    const tempImages: ImagePreview[] = filesToUpload
+      .filter((file) => file.type.startsWith('image/'))
+      .map((file, index) => ({
+        file,
+        preview: URL.createObjectURL(file),
+        position: images.length + index + 1,
+        uploading: true,
+      }));
 
-      if (file.type.startsWith('image/')) {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          newImages.push({
-            file,
-            preview: reader.result as string,
-            position: images.length + newImages.length + 1,
-          });
-
-          if (
-            newImages.length ===
-            Math.min(files.length, maxImages - images.length)
-          ) {
-            setImages((prev) => [...prev, ...newImages]);
-          }
-        };
-        reader.readAsDataURL(file);
-      }
-    });
+    // Add temp images to state
+    setImages((prev) => [...prev, ...tempImages]);
 
     // Reset input
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
+
+    // Upload each image immediately
+    tempImages.forEach(async (tempImage, index) => {
+      try {
+        console.log(`📤 Uploading image ${index + 1}/${tempImages.length}...`);
+        const uploadedUrl = await uploadImage(tempImage.file);
+
+        if (uploadedUrl) {
+          // Update image with uploaded URL
+          setImages((prev) =>
+            prev.map((img) =>
+              img.file === tempImage.file && img.uploading
+                ? { ...img, uploadedUrl, uploading: false }
+                : img
+            )
+          );
+          console.log(
+            `✅ Image ${index + 1} uploaded successfully:`,
+            uploadedUrl
+          );
+        } else {
+          // Mark image as failed
+          setImages((prev) =>
+            prev.map((img) =>
+              img.file === tempImage.file && img.uploading
+                ? { ...img, uploading: false, error: 'Upload failed' }
+                : img
+            )
+          );
+          console.error(`❌ Image ${index + 1} upload failed`);
+        }
+      } catch (error) {
+        console.error(`❌ Error uploading image ${index + 1}:`, error);
+        setImages((prev) =>
+          prev.map((img) =>
+            img.file === tempImage.file && img.uploading
+              ? { ...img, uploading: false, error: 'Upload error' }
+              : img
+          )
+        );
+      }
+    });
   };
 
   const handleRemoveImage = (index: number) => {
@@ -118,31 +157,55 @@ const FeedForm: React.FC<FeedFormProps> = ({ isOpen, onClose, onSuccess }) => {
       return;
     }
 
+    // Check if any images are still uploading
+    const hasUploadingImages = images.some((img) => img.uploading);
+    if (hasUploadingImages) {
+      showError('Please wait for images to finish uploading');
+      return;
+    }
+
+    // Check if any images failed to upload
+    const hasFailedImages = images.some((img) => img.error);
+    if (hasFailedImages) {
+      showError(
+        'Some images failed to upload. Please remove them and try again.'
+      );
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
-      // TODO: Upload images to cloud storage and get URLs
-      // For now, we'll use placeholder URLs
-      const imageUrls = images.map((img, index) => ({
-        imageUrl: `https://cdn.example.com/feeds/image${index + 1}.jpg`,
-        position: index + 1,
-      }));
+      // Use already uploaded URLs
+      const imageInputs = images
+        .filter((img) => img.uploadedUrl) // Only include successfully uploaded images
+        .map((img, index) => ({
+          imageUrl: img.uploadedUrl!,
+          position: index + 1,
+        }));
 
+      console.log('📝 Creating feed with images:', imageInputs);
+
+      // Create feed with uploaded image URLs
       await createFeed({
         variables: {
           input: {
             content: content.trim(),
             recipeId: null, // TODO: Implement recipe attachment
-            images: imageUrls.length > 0 ? imageUrls : undefined,
+            images: imageInputs.length > 0 ? imageInputs : undefined,
           },
         },
       });
     } catch (error) {
       console.error('Error creating post:', error);
+      setIsSubmitting(false);
     }
   };
 
-  const canSubmit = (content.trim() || images.length > 0) && !isSubmitting;
+  const canSubmit =
+    (content.trim() || images.length > 0) &&
+    !isSubmitting &&
+    !images.some((img) => img.uploading);
 
   // Get user initials for avatar fallback
   const getInitials = () => {
@@ -196,12 +259,65 @@ const FeedForm: React.FC<FeedFormProps> = ({ isOpen, onClose, onSuccess }) => {
                       <img
                         src={image.preview}
                         alt={`Preview ${index + 1}`}
-                        className="w-full h-32 object-cover rounded-lg"
+                        className={`w-full h-32 object-cover rounded-lg ${
+                          image.uploading ? 'opacity-50' : ''
+                        }`}
                       />
+
+                      {/* Uploading Spinner */}
+                      {image.uploading && (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="w-8 h-8 border-4 border-white border-t-primary rounded-full animate-spin" />
+                        </div>
+                      )}
+
+                      {/* Success Indicator */}
+                      {image.uploadedUrl && !image.uploading && (
+                        <div className="absolute top-2 left-2 bg-green-500 text-white rounded-full p-1">
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              d="M5 13l4 4L19 7"
+                            />
+                          </svg>
+                        </div>
+                      )}
+
+                      {/* Error Indicator */}
+                      {image.error && !image.uploading && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-red-500 bg-opacity-75">
+                          <div className="text-white text-center px-2">
+                            <svg
+                              className="w-8 h-8 mx-auto mb-1"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M6 18L18 6M6 6l12 12"
+                              />
+                            </svg>
+                            <span className="text-xs">{image.error}</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Remove Button */}
                       <button
                         onClick={() => handleRemoveImage(index)}
                         className="absolute top-2 right-2 bg-gray-900 bg-opacity-75 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                         type="button"
+                        disabled={image.uploading}
                       >
                         <HiOutlineXMark className="w-4 h-4" />
                       </button>
