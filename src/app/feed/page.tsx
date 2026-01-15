@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useQuery } from '@apollo/client';
 import FeedPostCard from '@/core/components/FeedPostCard/FeedPostCard';
 import ProtectedRoute from '@/routes/ProtectedRoute';
-import { HOME_FEEDS_QUERY } from '@/features/user/services/query';
+import { HOME_FEEDS_QUERY } from '@/features/feed/services/query';
 import { formatRelativeTime } from '@/utils/time-format';
 import '@/styles/tailwind.css';
 
