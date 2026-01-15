@@ -9,7 +9,10 @@ export const CREATE_FEED_MUTATION = gql`
         username
         profileImageUrl
       }
-      recipeId
+      recipe {
+        id
+        title
+      }
       content
       createdAt
       updatedAt
@@ -31,7 +34,10 @@ export const UPDATE_FEED_MUTATION = gql`
         username
         profileImageUrl
       }
-      recipeId
+      recipe {
+        id
+        title
+      }
       content
       createdAt
       updatedAt

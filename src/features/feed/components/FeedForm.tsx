@@ -234,25 +234,28 @@ const FeedForm: React.FC<FeedFormProps> = ({
     setIsSubmitting(true);
 
     try {
+      // Prepare image inputs from uploaded images
+      const imageInputs = images
+        .filter((img) => img.uploadedUrl)
+        .map((img, index) => ({
+          imageUrl: img.uploadedUrl!,
+          position: index + 1,
+        }));
+
       if (mode === 'edit' && feedId) {
-        // Update existing feed
+        // Update existing feed with content and images
         await updateFeed({
           variables: {
             id: feedId,
             input: {
               content: content.trim(),
+              recipeId: null, // TODO: Support recipe attachment
+              images: imageInputs.length > 0 ? imageInputs : undefined,
             },
           },
         });
       } else {
         // Create new feed
-        const imageInputs = images
-          .filter((img) => img.uploadedUrl)
-          .map((img, index) => ({
-            imageUrl: img.uploadedUrl!,
-            position: index + 1,
-          }));
-
         console.log('📝 Creating feed with images:', imageInputs);
 
         await createFeed({

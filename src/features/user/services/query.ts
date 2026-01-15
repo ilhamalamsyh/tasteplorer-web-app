@@ -166,7 +166,10 @@ export const HOME_FEEDS_QUERY = gql`
           username
           profileImageUrl
         }
-        recipeId
+        recipe {
+          id
+          title
+        }
         content
         createdAt
         updatedAt
@@ -192,7 +195,10 @@ export const USER_FEEDS_QUERY = gql`
           username
           profileImageUrl
         }
-        recipeId
+        recipe {
+          id
+          title
+        }
         content
         createdAt
         updatedAt
