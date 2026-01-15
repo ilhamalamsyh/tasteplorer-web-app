@@ -7,8 +7,8 @@ import {
   CURRENT_USER,
   MY_RECIPE_LIST_QUERY,
   USER_SUGGESTION_LIST_QUERY,
-  USER_FEEDS_QUERY,
 } from '@/features/user/services/query';
+import { USER_FEEDS_QUERY } from '@/features/feed/services/query';
 import { client } from '@/lib/apollo-client';
 import { ProfileView } from '@/features/user/components/ProfileView';
 import useSnackbar from '@/core/hooks/useSnackbar';
