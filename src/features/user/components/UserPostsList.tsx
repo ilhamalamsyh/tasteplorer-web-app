@@ -220,47 +220,49 @@ export const UserPostsList: React.FC<UserPostsListProps> = ({
                 </div>
               </div>
 
-              {/* Three Dots Menu */}
-              <div
-                className="relative"
-                ref={(el) => {
-                  menuRefs.current[feed.id] = el;
-                }}
-              >
-                <button
-                  onClick={(e) => handleMenuToggle(feed.id, e)}
-                  className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
-                  aria-label="Post options"
+              {/* Three Dots Menu - Only show for own profile */}
+              {isOwnProfile && (
+                <div
+                  className="relative"
+                  ref={(el) => {
+                    menuRefs.current[feed.id] = el;
+                  }}
                 >
-                  <HiOutlineDotsHorizontal className="w-5 h-5" />
-                </button>
+                  <button
+                    onClick={(e) => handleMenuToggle(feed.id, e)}
+                    className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+                    aria-label="Post options"
+                  >
+                    <HiOutlineDotsHorizontal className="w-5 h-5" />
+                  </button>
 
-                {/* Dropdown Menu */}
-                {openMenuId === feed.id && (
-                  <div className="absolute right-0 top-full mt-1 bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden z-50 min-w-[180px] animate-in fade-in slide-in-from-top-2 duration-200">
-                    <div className="py-1">
-                      <button
-                        onClick={() => handleEdit(feed.id)}
-                        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
-                      >
-                        <HiOutlinePencilSquare className="w-5 h-5 text-gray-700" />
-                        <span className="text-sm font-medium text-gray-900">
-                          Edit Post
-                        </span>
-                      </button>
-                      <button
-                        onClick={() => handleDelete(feed.id)}
-                        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-red-50 transition-colors text-left"
-                      >
-                        <HiOutlineTrash className="w-5 h-5 text-red-600" />
-                        <span className="text-sm font-medium text-red-600">
-                          Delete Post
-                        </span>
-                      </button>
+                  {/* Dropdown Menu */}
+                  {openMenuId === feed.id && (
+                    <div className="absolute right-0 top-full mt-1 bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden z-50 min-w-[180px] animate-in fade-in slide-in-from-top-2 duration-200">
+                      <div className="py-1">
+                        <button
+                          onClick={() => handleEdit(feed.id)}
+                          className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
+                        >
+                          <HiOutlinePencilSquare className="w-5 h-5 text-gray-700" />
+                          <span className="text-sm font-medium text-gray-900">
+                            Edit Post
+                          </span>
+                        </button>
+                        <button
+                          onClick={() => handleDelete(feed.id)}
+                          className="w-full flex items-center gap-3 px-4 py-3 hover:bg-red-50 transition-colors text-left"
+                        >
+                          <HiOutlineTrash className="w-5 h-5 text-red-600" />
+                          <span className="text-sm font-medium text-red-600">
+                            Delete Post
+                          </span>
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Content */}
