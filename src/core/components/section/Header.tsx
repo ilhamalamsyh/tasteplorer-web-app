@@ -1,16 +1,41 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { HiOutlinePencilSquare, HiOutlinePlusCircle } from 'react-icons/hi2';
 import { useAuth } from '@/context/AuthContext';
 import { useNavigation } from '@/context/NavigationContext';
 import LoginModal from '@/features/auth/components/LoginModal';
+import FeedForm from '@/features/feed/components/FeedForm';
 
 const Header: React.FC = () => {
   const { user, loading } = useAuth();
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showAddMenu, setShowAddMenu] = useState(false);
+  const [showFeedForm, setShowFeedForm] = useState(false);
+  const addMenuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const pathname = usePathname();
   const { previousPath, setPreviousPath } = useNavigation();
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        addMenuRef.current &&
+        !addMenuRef.current.contains(event.target as Node)
+      ) {
+        setShowAddMenu(false);
+      }
+    };
+
+    if (showAddMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showAddMenu]);
 
   const getLinkStyle = (path: string) => {
     const isActive = pathname === path;
@@ -44,6 +69,32 @@ const Header: React.FC = () => {
     router.push('/profile');
   };
 
+  const handleAddClick = () => {
+    if (!user && !loading) {
+      setPreviousPath(pathname);
+      setShowLoginModal(true);
+      return;
+    }
+    setShowAddMenu(!showAddMenu);
+  };
+
+  const handleCreatePost = () => {
+    setShowAddMenu(false);
+    setShowFeedForm(true);
+  };
+
+  const handleCreateRecipe = () => {
+    setShowAddMenu(false);
+    router.push('/recipes');
+  };
+
+  const handleFeedFormSuccess = () => {
+    // Refresh the feed page if we're on it
+    if (pathname === '/feed') {
+      router.refresh();
+    }
+  };
+
   // Helper for fallback initials
   const getInitials = (name: string) =>
     name
@@ -64,10 +115,46 @@ const Header: React.FC = () => {
           </Link>
           {/* Nav */}
           <nav className="hidden md:flex flex-1 justify-center space-x-8">
-            <Link href="/" className={getLinkStyle('/')}>
+            <Link href="/feed" className={getLinkStyle('/feed')}>
               Home
             </Link>
-            <Link href="/explore" className={getLinkStyle('/explore')}>
+            {!loading && user && (
+              <div className="relative" ref={addMenuRef}>
+                <button
+                  onClick={handleAddClick}
+                  className={getLinkStyle('/add')}
+                >
+                  Add
+                </button>
+
+                {/* Add Menu Dropdown */}
+                {showAddMenu && (
+                  <div className="absolute top-full mt-2 right-0 bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="py-2 min-w-[200px]">
+                      <button
+                        onClick={handleCreatePost}
+                        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
+                      >
+                        <HiOutlinePencilSquare className="w-5 h-5 text-gray-700 flex-shrink-0" />
+                        <span className="text-sm font-medium text-gray-900">
+                          Create a post
+                        </span>
+                      </button>
+                      <button
+                        onClick={handleCreateRecipe}
+                        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
+                      >
+                        <HiOutlinePlusCircle className="w-5 h-5 text-gray-700 flex-shrink-0" />
+                        <span className="text-sm font-medium text-gray-900">
+                          Create a new recipe
+                        </span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+            <Link href="/" className={getLinkStyle('/')}>
               Explore
             </Link>
             <a
@@ -107,6 +194,13 @@ const Header: React.FC = () => {
         </div>
       </header>
       <LoginModal isOpen={showLoginModal} onClose={handleCloseLoginModal} />
+      {showFeedForm && (
+        <FeedForm
+          isOpen={showFeedForm}
+          onClose={() => setShowFeedForm(false)}
+          onSuccess={handleFeedFormSuccess}
+        />
+      )}
     </>
   );
 };

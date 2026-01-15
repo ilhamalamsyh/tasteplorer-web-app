@@ -67,3 +67,56 @@ export const RECIPE_LIST_QUERY = gql`
     }
   }
 `;
+
+export const USER_RECIPE_LIST_QUERY = gql`
+  query UserRecipeList(
+    $userId: Int!
+    $limit: Int
+    $after: String
+    $search: String
+  ) {
+    userRecipeList(
+      userId: $userId
+      limit: $limit
+      after: $after
+      search: $search
+    ) {
+      recipes {
+        id
+        title
+        description
+        cookingTime
+        servings
+        createdAt
+        updatedAt
+        image {
+          id
+          url
+        }
+        author {
+          id
+          username
+          fullname
+          image
+        }
+        ingredients {
+          id
+          ingredient
+        }
+        instructions {
+          id
+          instruction
+        }
+        isFavorite
+      }
+      meta {
+        total
+        currentPage
+        pageSize
+        totalPage
+        hasNextPage
+        endCursor
+      }
+    }
+  }
+`;

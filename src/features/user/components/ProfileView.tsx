@@ -8,6 +8,8 @@ import RecipeCard from '@/core/components/RecipeCard/RecipeCard';
 import useSnackbar from '@/core/hooks/useSnackbar';
 import Snackbar from '@/core/components/snackbar/Snackbar';
 import { UserSuggestionCard } from './UserSuggestionCard';
+import { ProfileTabs } from './ProfileTabs';
+import { UserPostsList } from './UserPostsList';
 
 // TypeScript interfaces
 interface RecipeImage {
@@ -52,6 +54,28 @@ interface ProfileStats {
   posts: number;
   following: number;
   followers: number;
+}
+
+interface FeedImage {
+  id: string;
+  imageUrl: string;
+  position: number;
+}
+
+interface FeedUser {
+  id: number;
+  username: string;
+  profileImageUrl?: string;
+}
+
+interface Feed {
+  id: string;
+  user: FeedUser;
+  recipeId?: number;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+  images: FeedImage[];
 }
 
 interface ProfileViewProps {
@@ -99,6 +123,14 @@ interface ProfileViewProps {
   // Optional
   isOwnProfile?: boolean;
   emptyStateMessage?: string;
+
+  // Posts/Feeds data
+  feeds?: Feed[];
+  feedsLoading?: boolean;
+  feedsHasMore?: boolean;
+  onFetchMoreFeeds?: () => void;
+  activeTab?: 'posts' | 'recipes';
+  onTabChange?: (tab: 'posts' | 'recipes') => void;
 }
 
 export const ProfileView: React.FC<ProfileViewProps> = ({
@@ -116,6 +148,12 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   userSuggestions,
   isOwnProfile = false,
   emptyStateMessage,
+  feeds = [],
+  feedsLoading = false,
+  feedsHasMore = false,
+  onFetchMoreFeeds,
+  activeTab = 'recipes',
+  onTabChange,
 }) => {
   const router = useRouter();
   const loaderRef = useRef<HTMLDivElement | null>(null);
@@ -293,95 +331,118 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         </div>
       </main>
 
-      {/* Recipe Section */}
+      {/* Content Section with Tabs */}
       <div className="w-full py-6 sm:py-8 md:py-12 bg-gray-50">
         <div className="max-w-6xl mx-auto px-4 md:px-8 lg:px-12">
-          {/* Search Field */}
-          <div className="mb-6 max-w-md mx-auto">
-            <input
-              type="text"
-              placeholder="Search..."
-              value={searchQuery}
-              onChange={handleSearchChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
-            />
-          </div>
-
-          {/* Loading State */}
-          {recipesLoading && recipes.length === 0 && (
-            <div className="flex items-center justify-center py-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          {/* Tabs */}
+          {onTabChange && (
+            <div className="mb-6">
+              <ProfileTabs activeTab={activeTab} onTabChange={onTabChange} />
             </div>
           )}
 
-          {/* Empty State */}
-          {!recipesLoading && recipes.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-12">
-              <div className="w-16 h-16 mx-auto mb-4">
-                <Image
-                  src="https://global-web-assets.cpcdn.com/assets/empty_states/no_results-8613ba06d717993e5429d9907d209dc959106472a8a4089424f1b0ccbbcd5fa9.svg"
-                  alt="Empty bowl"
-                  width={64}
-                  height={64}
-                  className="opacity-50"
+          {/* Posts Tab Content */}
+          {activeTab === 'posts' && (
+            <UserPostsList
+              feeds={feeds}
+              loading={feedsLoading}
+              hasMore={feedsHasMore}
+              onFetchMore={onFetchMoreFeeds}
+              isOwnProfile={isOwnProfile}
+            />
+          )}
+
+          {/* Recipes Tab Content */}
+          {activeTab === 'recipes' && (
+            <>
+              {/* Search Field */}
+              <div className="mb-6 max-w-md mx-auto">
+                <input
+                  type="text"
+                  placeholder="Search recipes..."
+                  value={searchQuery}
+                  onChange={handleSearchChange}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                 />
               </div>
-              <h2 className="text-xl font-semibold mb-2">
-                {searchQuery
-                  ? 'No recipes found'
-                  : emptyStateMessage || 'No cooking activity yet.'}
-              </h2>
-              <p className="text-gray-500 mb-4">
-                {searchQuery
-                  ? 'Try a different search term'
-                  : isOwnProfile
-                  ? 'From your kitchen to the world - Share your recipes!'
-                  : 'This user has not posted any recipes yet.'}
-              </p>
-              {!searchQuery && isOwnProfile && (
-                <button className="px-6 py-2 bg-orange-500 text-white font-semibold rounded-3xl hover:bg-orange-600 transition">
-                  Post
-                </button>
+
+              {/* Loading State */}
+              {recipesLoading && recipes.length === 0 && (
+                <div className="flex items-center justify-center py-12">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+                </div>
               )}
-            </div>
-          )}
 
-          {/* Recipe Grid */}
-          {recipes.length > 0 && (
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 justify-items-center">
-              {recipes.map((recipe, idx) => (
-                <RecipeCard
-                  key={recipe.id}
-                  title={recipe.title}
-                  img={recipe.image?.url || '/images/broken-image.png'}
-                  rating={0}
-                  ingredients={recipe.ingredients?.length || 0}
-                  author={fullname}
-                  authorAvatar={image || ''}
-                  isBookmarked={false}
-                  time={
-                    recipe.cookingTime ? `${recipe.cookingTime} min` : 'N/A'
-                  }
-                  onClick={() => handleCardClick(recipe.id)}
-                  onBookmark={(e) => handleBookmark(idx, e)}
-                  onMenu={(e) => handleMenu(idx, e)}
-                  menuOpen={openMenuIndex === idx}
-                />
-              ))}
-            </div>
-          )}
+              {/* Empty State */}
+              {!recipesLoading && recipes.length === 0 && (
+                <div className="flex flex-col items-center justify-center py-12">
+                  <div className="w-16 h-16 mx-auto mb-4">
+                    <Image
+                      src="https://global-web-assets.cpcdn.com/assets/empty_states/no_results-8613ba06d717993e5429d9907d209dc959106472a8a4089424f1b0ccbbcd5fa9.svg"
+                      alt="Empty bowl"
+                      width={64}
+                      height={64}
+                      className="opacity-50"
+                    />
+                  </div>
+                  <h2 className="text-xl font-semibold mb-2">
+                    {searchQuery
+                      ? 'No recipes found'
+                      : emptyStateMessage || 'No cooking activity yet.'}
+                  </h2>
+                  <p className="text-gray-500 mb-4">
+                    {searchQuery
+                      ? 'Try a different search term'
+                      : isOwnProfile
+                      ? 'From your kitchen to the world - Share your recipes!'
+                      : 'This user has not posted any recipes yet.'}
+                  </p>
+                  {!searchQuery && isOwnProfile && (
+                    <button className="px-6 py-2 bg-orange-500 text-white font-semibold rounded-3xl hover:bg-orange-600 transition">
+                      Post
+                    </button>
+                  )}
+                </div>
+              )}
 
-          {/* Loader for infinite scroll */}
-          <div ref={loaderRef} className="h-8 mt-4" />
-          {(recipesLoading || isFetchingMore) && recipes.length > 0 && (
-            <div className="flex justify-center py-6">
-              <span className="w-8 h-8 rounded-full border-4 border-gray-300 border-t-primary animate-spin" />
-            </div>
-          )}
-          {!recipesMeta.hasNextPage && recipes.length > 0 && (
-            <div className="text-center text-gray-400 py-8">
-              No more recipes
-            </div>
+              {/* Recipe Grid */}
+              {recipes.length > 0 && (
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 justify-items-center">
+                  {recipes.map((recipe, idx) => (
+                    <RecipeCard
+                      key={recipe.id}
+                      title={recipe.title}
+                      img={recipe.image?.url || '/images/broken-image.png'}
+                      rating={0}
+                      ingredients={recipe.ingredients?.length || 0}
+                      author={fullname}
+                      authorAvatar={image || ''}
+                      isBookmarked={false}
+                      time={
+                        recipe.cookingTime ? `${recipe.cookingTime} min` : 'N/A'
+                      }
+                      onClick={() => handleCardClick(recipe.id)}
+                      onBookmark={(e) => handleBookmark(idx, e)}
+                      onMenu={(e) => handleMenu(idx, e)}
+                      menuOpen={openMenuIndex === idx}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {/* Loader for infinite scroll */}
+              <div ref={loaderRef} className="h-8 mt-4" />
+              {(recipesLoading || isFetchingMore) && recipes.length > 0 && (
+                <div className="flex justify-center py-6">
+                  <span className="w-8 h-8 rounded-full border-4 border-gray-300 border-t-primary animate-spin" />
+                </div>
+              )}
+              {!recipesMeta.hasNextPage && recipes.length > 0 && (
+                <div className="text-center text-gray-400 py-8">
+                  No more recipes
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>

@@ -1,13 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from 'react';
 
+type CloudinaryFolder = 'USER' | 'FEED' | 'RECIPE' | 'PROFILE';
+
 interface UseImageUploadReturn {
   uploadImage: (file: File) => Promise<string | null>;
   uploading: boolean;
   uploadError: string | null;
 }
 
-export const useImageUpload = (): UseImageUploadReturn => {
+export const useImageUpload = (
+  folder: CloudinaryFolder = 'USER'
+): UseImageUploadReturn => {
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
@@ -34,7 +38,7 @@ export const useImageUpload = (): UseImageUploadReturn => {
 
     try {
       console.log(
-        '📤 Uploading image:',
+        `📤 Uploading image to ${folder} folder:`,
         file.name,
         'Size:',
         file.size,
@@ -68,7 +72,7 @@ export const useImageUpload = (): UseImageUploadReturn => {
           file: null, // Will be mapped to the file
           setting: {
             uploadService: 'Cloudinary',
-            folder: 'USER',
+            folder: folder, // Use parameter from hook
           },
         },
       });
@@ -111,7 +115,7 @@ export const useImageUpload = (): UseImageUploadReturn => {
         result.data?.uploadSingleFile?.imageUrl
       ) {
         console.log(
-          '✅ Image uploaded successfully:',
+          `✅ Image uploaded successfully to ${folder}:`,
           result.data.uploadSingleFile.imageUrl
         );
         return result.data.uploadSingleFile.imageUrl;

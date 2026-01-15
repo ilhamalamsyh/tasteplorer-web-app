@@ -87,7 +87,9 @@ const FeedPostCard: React.FC<FeedPostCardProps> = ({ post, className }) => {
       </div>
       {/* Text */}
       <div className="px-5 pt-3 pb-1">
-        <p className="text-gray-800 text-base leading-snug">{post.text}</p>
+        <p className="text-gray-800 text-base leading-relaxed whitespace-pre-line break-words">
+          {post.text}
+        </p>
       </div>
       {/* Source Card */}
       <a
