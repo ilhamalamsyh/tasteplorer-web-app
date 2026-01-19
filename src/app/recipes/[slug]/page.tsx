@@ -12,6 +12,8 @@ import { recipes as recipeData } from '@/core/data/recipes';
 import RecipeDetailSkeleton from '@/components/recipes/RecipeDetailSkeleton';
 import { useQuery, gql } from '@apollo/client';
 import { RECIPE_DETAIL_QUERY } from '@/features/recipe/services/query';
+import { useAuth } from '@/context/AuthContext';
+import Image from 'next/image';
 
 interface RecipeDetailPageProps {
   params: Promise<{ slug: string }>;
@@ -22,6 +24,7 @@ export default function RecipeDetailPage({ params }: RecipeDetailPageProps) {
   const [isClient, setIsClient] = useState(false);
   const resolvedParams = React.use(params);
   const decodedSlug = decodeURIComponent(resolvedParams.slug);
+  const { user } = useAuth();
 
   // Fetch recipe detail from API
   const { data, loading, error } = useQuery(RECIPE_DETAIL_QUERY, {
@@ -39,11 +42,16 @@ export default function RecipeDetailPage({ params }: RecipeDetailPageProps) {
   if (error || !data?.recipeDetail) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-        <img
-          src="/images/broken-image.png"
-          alt="Not found"
-          className="w-32 h-32 mb-6 opacity-60"
-        />
+        <div className="relative w-32 h-32 mb-6">
+          <Image
+            src="/images/broken-image.png"
+            alt="Not found"
+            width={128}
+            height={128}
+            className="opacity-60"
+            priority
+          />
+        </div>
         <h2 className="text-2xl font-bold mb-2 text-gray-700">
           Recipe Not Found
         </h2>
@@ -91,6 +99,9 @@ export default function RecipeDetailPage({ params }: RecipeDetailPageProps) {
     relatedRecipes: [], // dummy
   };
 
+  // Get current user ID from auth context
+  const currentUserId = user?.id?.toString() ?? '';
+
   // Handler functions
   const handleAddNote = async (content: string) => {
     // TODO: Implement API call to add note
@@ -114,6 +125,7 @@ export default function RecipeDetailPage({ params }: RecipeDetailPageProps) {
       onToggleHelpful={handleToggleHelpful}
       onRecipeClick={handleRecipeClick}
       onBookmark={handleBookmark}
+      currentUserId={currentUserId}
     />
   );
 }

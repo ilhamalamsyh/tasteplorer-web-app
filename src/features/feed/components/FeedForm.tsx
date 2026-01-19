@@ -14,6 +14,7 @@ import useSnackbar from '@/core/hooks/useSnackbar';
 import Snackbar from '@/core/components/snackbar/Snackbar';
 import { useAuth } from '@/context/AuthContext';
 import { useImageUpload } from '@/core/hooks/useImageUpload';
+import Image from 'next/image';
 
 interface FeedFormProps {
   isOpen: boolean;
@@ -314,11 +315,15 @@ const FeedForm: React.FC<FeedFormProps> = ({
           {/* User Info */}
           <div className="flex items-start gap-3 mb-4">
             {user?.image && user.image.trim() !== '' ? (
-              <img
-                src={user.image}
-                alt={user.fullname}
-                className="w-12 h-12 rounded-full object-cover flex-shrink-0"
-              />
+              <div className="relative w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
+                <Image
+                  src={user.image}
+                  alt={user.fullname}
+                  fill
+                  className="object-cover"
+                  sizes="48px"
+                />
+              </div>
             ) : (
               <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
                 {getInitials()}
@@ -340,14 +345,19 @@ const FeedForm: React.FC<FeedFormProps> = ({
               {images.length > 0 && (
                 <div className="mt-4 grid grid-cols-2 gap-2">
                   {images.map((image, index) => (
-                    <div key={index} className="relative group">
-                      <img
-                        src={image.preview}
-                        alt={`Preview ${index + 1}`}
-                        className={`w-full h-32 object-cover rounded-lg ${
-                          image.uploading ? 'opacity-50' : ''
-                        }`}
-                      />
+                    <div key={index} className="relative group h-32">
+                      <div className="relative w-full h-full rounded-lg overflow-hidden">
+                        <Image
+                          src={image.preview}
+                          alt={`Preview ${index + 1}`}
+                          fill
+                          className={`object-cover ${
+                            image.uploading ? 'opacity-50' : ''
+                          }`}
+                          sizes="(max-width: 768px) 50vw, 200px"
+                          unoptimized
+                        />
+                      </div>
 
                       {/* Uploading Spinner */}
                       {image.uploading && (

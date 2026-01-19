@@ -6,6 +6,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useNavigation } from '@/context/NavigationContext';
 import LoginModal from '@/features/auth/components/LoginModal';
 import FeedForm from '@/features/feed/components/FeedForm';
+import Image from 'next/image';
 
 const Header: React.FC = () => {
   const { user, loading } = useAuth();
@@ -85,7 +86,7 @@ const Header: React.FC = () => {
 
   const handleCreateRecipe = () => {
     setShowAddMenu(false);
-    router.push('/recipes');
+    router.push('/recipes/new');
   };
 
   const handleFeedFormSuccess = () => {
@@ -170,12 +171,15 @@ const Header: React.FC = () => {
             {!loading && user ? (
               <a href="/profile" onClick={handleProfileClick}>
                 {user.image && user.image.trim() !== '' ? (
-                  <img
-                    src={user.image}
-                    alt="User Avatar"
-                    className="w-10 h-10 rounded-full object-cover cursor-pointer"
-                    style={{ boxShadow: 'none', border: 'none' }}
-                  />
+                  <div className="relative w-10 h-10 rounded-full overflow-hidden cursor-pointer">
+                    <Image
+                      src={user.image}
+                      alt="User Avatar"
+                      fill
+                      className="object-cover"
+                      sizes="40px"
+                    />
+                  </div>
                 ) : (
                   <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white font-bold text-lg cursor-pointer">
                     {getInitials(user.fullname)}

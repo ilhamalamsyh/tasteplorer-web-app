@@ -1,6 +1,7 @@
 import React from 'react';
 import { profile } from '@/core/data/profile';
 import { myCommunities, recommendedCommunities } from '@/core/data/communities';
+import Image from 'next/image';
 
 const FeedSidebar: React.FC = () => {
   return (
@@ -8,11 +9,15 @@ const FeedSidebar: React.FC = () => {
       {/* Profile Card */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col items-center">
         {profile.avatar && profile.avatar.trim() !== '' ? (
-          <img
-            src={profile.avatar}
-            alt={profile.name}
-            className="w-16 h-16 rounded-full object-cover mb-2"
-          />
+          <div className="relative w-16 h-16 rounded-full overflow-hidden mb-2">
+            <Image
+              src={profile.avatar}
+              alt={profile.name}
+              fill
+              className="object-cover"
+              sizes="64px"
+            />
+          </div>
         ) : (
           <div className="w-16 h-16 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 font-bold text-xl mb-2">
             {profile.name.charAt(0).toUpperCase()}
@@ -35,11 +40,15 @@ const FeedSidebar: React.FC = () => {
           {myCommunities.map((c) => (
             <li key={c.name} className="flex items-center gap-2">
               {c.avatar && c.avatar.trim() !== '' ? (
-                <img
-                  src={c.avatar}
-                  alt={c.name}
-                  className="w-6 h-6 rounded-full"
-                />
+                <div className="relative w-6 h-6 rounded-full overflow-hidden flex-shrink-0">
+                  <Image
+                    src={c.avatar}
+                    alt={c.name}
+                    fill
+                    className="object-cover"
+                    sizes="24px"
+                  />
+                </div>
               ) : (
                 <div className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 font-bold text-xs">
                   {c.name.charAt(0).toUpperCase()}
@@ -61,11 +70,15 @@ const FeedSidebar: React.FC = () => {
           {recommendedCommunities.map((c) => (
             <li key={c.name} className="flex items-center gap-2">
               {c.avatar && c.avatar.trim() !== '' ? (
-                <img
-                  src={c.avatar}
-                  alt={c.name}
-                  className="w-6 h-6 rounded-full"
-                />
+                <div className="relative w-6 h-6 rounded-full overflow-hidden flex-shrink-0">
+                  <Image
+                    src={c.avatar}
+                    alt={c.name}
+                    fill
+                    className="object-cover"
+                    sizes="24px"
+                  />
+                </div>
               ) : (
                 <div className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 font-bold text-xs">
                   {c.name.charAt(0).toUpperCase()}
