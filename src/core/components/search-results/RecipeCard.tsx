@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 
 export interface RecipeCardProps {
   title: string;
@@ -14,8 +15,14 @@ const RecipeCard: React.FC<RecipeCardProps> = ({
   time,
 }) => (
   <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col cursor-pointer transition hover:shadow-md">
-    <div className="w-full aspect-[4/6] bg-gray-100 relative">
-      <img src={img} alt={title} className="object-cover w-full h-full" />
+    <div className="relative w-full aspect-[4/6] bg-gray-100">
+      <Image
+        src={img}
+        alt={title}
+        fill
+        className="object-cover"
+        sizes="(max-width: 768px) 50vw, 33vw"
+      />
     </div>
     <div className="p-3 flex flex-col flex-1">
       <h3 className="font-semibold text-sm text-gray-900 mb-1 line-clamp-2">

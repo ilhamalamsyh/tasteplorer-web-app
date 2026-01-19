@@ -1,10 +1,9 @@
-/* eslint-disable @next/next/no-img-element */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client';
 
 import { useField } from 'formik';
 import React, { useState } from 'react';
 import { FileRejection, useDropzone } from 'react-dropzone';
+import Image from 'next/image';
 
 interface SingleFileDropZoneProps {
   name: string;
@@ -22,7 +21,7 @@ const SingleFileDropZone: React.FC<SingleFileDropZoneProps> = ({
   value,
 }) => {
   const [errorMessage, setErrorMessage] = useState('');
-  const [field, meta, helpers] = useField(name);
+  const [, meta, helpers] = useField(name);
   const [imageUrl, setImageUrl] = useState<string | null>(value as string);
 
   const onDrop = (acceptedFiles: File[], rejectedFiles: FileRejection[]) => {
@@ -63,11 +62,14 @@ const SingleFileDropZone: React.FC<SingleFileDropZoneProps> = ({
     <div className="my-4">
       {imageUrl && imageUrl.trim() !== '' ? (
         <div className="flex flex-col items-center">
-          <div className="w-48 h-48 bg-gray-100 rounded-lg overflow-hidden">
-            <img
+          <div className="relative w-48 h-48 bg-gray-100 rounded-lg overflow-hidden">
+            <Image
               src={imageUrl}
               alt="Uploaded"
-              className="w-full h-full object-cover"
+              fill
+              className="object-cover"
+              sizes="192px"
+              unoptimized
             />
           </div>
           <button

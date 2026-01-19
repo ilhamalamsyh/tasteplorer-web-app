@@ -29,6 +29,35 @@ export const RECIPE_DETAIL_QUERY = gql`
   }
 `;
 
+export const MY_RECIPE_DETAIL_QUERY = gql`
+  query MyRecipeDetail($id: Int!) {
+    myRecipeDetail(id: $id) {
+      id
+      title
+      description
+      image {
+        url
+      }
+      cookingTime
+      servings
+      author {
+        id
+        fullname
+        username
+        image
+      }
+      ingredients {
+        id
+        ingredient
+      }
+      instructions {
+        id
+        instruction
+      }
+    }
+  }
+`;
+
 export const RECIPE_LIST_QUERY = gql`
   query RecipeList($search: String, $after: String) {
     recipeList(search: $search, after: $after) {

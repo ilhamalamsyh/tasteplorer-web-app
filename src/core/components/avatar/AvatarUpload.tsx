@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useImageUpload } from '@/core/hooks/useImageUpload';
+import Image from 'next/image';
 
 interface AvatarUploadProps {
   onImageUpload: (imageUrl: string | null) => void;
@@ -120,11 +121,16 @@ const AvatarUpload: React.FC<AvatarUploadProps> = ({
       >
         {previewUrl ? (
           <>
-            <img
-              src={previewUrl}
-              alt="Avatar preview"
-              className="w-full h-full rounded-full object-cover"
-            />
+            <div className="relative w-full h-full rounded-full overflow-hidden">
+              <Image
+                src={previewUrl}
+                alt="Avatar preview"
+                fill
+                className="object-cover"
+                sizes="128px"
+                unoptimized
+              />
+            </div>
             {!uploading && (
               <button
                 type="button"

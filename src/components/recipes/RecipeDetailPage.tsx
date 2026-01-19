@@ -30,6 +30,7 @@ export interface Recipe {
   rating: number;
   totalRatings: number;
   author: {
+    id: string;
     name: string;
     avatar?: string;
   };
@@ -46,6 +47,7 @@ interface RecipeDetailPageProps {
   onToggleHelpful?: (noteId: string) => void;
   onRecipeClick?: (recipeId: string) => void;
   onBookmark?: (recipeId: string) => void;
+  currentUserId?: string;
 }
 
 const RecipeDetailPage: React.FC<RecipeDetailPageProps> = ({
@@ -55,6 +57,7 @@ const RecipeDetailPage: React.FC<RecipeDetailPageProps> = ({
   onToggleHelpful,
   onRecipeClick,
   onBookmark,
+  currentUserId,
 }) => {
   const [relatedRecipesState, setRelatedRecipesState] = useState(recipesWithId);
   const [openMenuIndex, setOpenMenuIndex] = useState<number | null>(null);
@@ -88,6 +91,10 @@ const RecipeDetailPage: React.FC<RecipeDetailPageProps> = ({
     if (onBookmark) onBookmark(recipe.relatedRecipes[idx].id);
   };
 
+  const handleEditRecipe = () => {
+    router.push(`/recipes/${recipe.id}/edit`);
+  };
+
   return (
     <div className={`w-full min-h-screen ${className}`}>
       <div className="w-full max-w-5xl mx-auto px-2 sm:px-4 md:px-6 lg:px-8 py-8">
@@ -104,6 +111,10 @@ const RecipeDetailPage: React.FC<RecipeDetailPageProps> = ({
           totalRatings={recipe.totalRatings}
           authorName={recipe.author.name}
           authorAvatar={recipe.author.avatar}
+          recipeId={recipe.id}
+          authorId={recipe.author.id}
+          currentUserId={currentUserId}
+          onEditClick={handleEditRecipe}
         />
 
         {/* Main Content Grid */}

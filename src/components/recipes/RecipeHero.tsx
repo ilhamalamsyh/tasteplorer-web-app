@@ -15,6 +15,10 @@ interface RecipeHeroProps {
   totalRatings?: number;
   authorName?: string;
   authorAvatar?: string;
+  recipeId?: string;
+  authorId?: string;
+  currentUserId?: string;
+  onEditClick?: () => void;
 }
 
 const RecipeHero: React.FC<RecipeHeroProps> = ({
@@ -29,6 +33,10 @@ const RecipeHero: React.FC<RecipeHeroProps> = ({
   totalRatings = 127,
   authorName,
   authorAvatar,
+  recipeId,
+  authorId,
+  currentUserId,
+  onEditClick,
 }) => {
   const [isMobile, setIsMobile] = useState(false);
   const [showFullSubtitle, setShowFullSubtitle] = useState(false);
@@ -73,23 +81,13 @@ const RecipeHero: React.FC<RecipeHeroProps> = ({
               : { aspectRatio: '16/9' }
           }
         >
-          <img
+          <Image
             src={imageUrl || '/images/broken-image.png'}
             alt={title}
-            className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 hover:scale-105 rounded-xl"
-            style={{
-              display: 'block',
-              position: 'absolute',
-              zIndex: 1,
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: '100%',
-            }}
-            onLoad={() => console.log('Image loaded successfully:', imageUrl)}
-            onError={(e) => {
-              e.currentTarget.src = '/images/broken-image.png';
-            }}
+            fill
+            className="object-cover transition-transform duration-300 hover:scale-105 rounded-xl"
+            sizes={isMobile ? '100vw' : '420px'}
+            priority
           />
 
           {isMobile && (
@@ -108,6 +106,32 @@ const RecipeHero: React.FC<RecipeHeroProps> = ({
         >
           {/* Header */}
           <div className="mb-4 md:mb-6 w-full">
+            {/* Edit Button - Only show if current user is the author */}
+            {currentUserId && authorId && currentUserId === authorId && (
+              <div className="flex justify-end mb-2">
+                <button
+                  onClick={onEditClick}
+                  className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-600 hover:text-primary hover:bg-primary/5 rounded-lg transition-colors"
+                  aria-label="Edit recipe"
+                >
+                  <svg
+                    className="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                    />
+                  </svg>
+                  <span className="font-medium">Edit Recipe</span>
+                </button>
+              </div>
+            )}
+
             <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 dark:text-white mb-2 md:mb-3 leading-tight w-full">
               {title}
             </h1>

@@ -9,6 +9,7 @@ import { DELETE_FEED_MUTATION } from '@/features/feed/services/mutation';
 import FeedForm from '@/features/feed/components/FeedForm';
 import DeleteConfirmationModal from '@/features/feed/components/DeleteConfirmationModal';
 import useSnackbar from '@/core/hooks/useSnackbar';
+import Image from 'next/image';
 
 interface FeedImage {
   id: string;
@@ -198,11 +199,15 @@ export const UserPostsList: React.FC<UserPostsListProps> = ({
             <div className="flex items-center justify-between px-4 pt-4 pb-2">
               <div className="flex items-center gap-3">
                 {feed.user.profileImageUrl ? (
-                  <img
-                    src={feed.user.profileImageUrl}
-                    alt={feed.user.username}
-                    className="w-10 h-10 rounded-full object-cover"
-                  />
+                  <div className="relative w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
+                    <Image
+                      src={feed.user.profileImageUrl}
+                      alt={feed.user.username}
+                      fill
+                      className="object-cover"
+                      sizes="40px"
+                    />
+                  </div>
                 ) : (
                   <div className="w-10 h-10 rounded-full bg-gray-300 flex items-center justify-center text-gray-600 font-bold">
                     {feed.user.username.charAt(0).toUpperCase()}
@@ -274,11 +279,13 @@ export const UserPostsList: React.FC<UserPostsListProps> = ({
 
             {/* Images */}
             {feed.images && feed.images.length > 0 && (
-              <div className="w-full aspect-video bg-gray-100 overflow-hidden">
-                <img
+              <div className="relative w-full aspect-video bg-gray-100 overflow-hidden">
+                <Image
                   src={feed.images[0].imageUrl}
                   alt="Post"
-                  className="w-full h-full object-cover transition-transform duration-200 hover:scale-105"
+                  fill
+                  className="object-cover transition-transform duration-200 hover:scale-105"
+                  sizes="(max-width: 768px) 100vw, 672px"
                 />
               </div>
             )}

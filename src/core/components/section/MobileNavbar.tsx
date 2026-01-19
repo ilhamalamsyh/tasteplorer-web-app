@@ -63,7 +63,7 @@ const MobileNavbar: React.FC = () => {
 
   const handleCreateRecipe = () => {
     setShowCreateMenu(false);
-    router.push('/recipes');
+    router.push('/recipes/new');
   };
 
   const handleFeedFormSuccess = () => {
