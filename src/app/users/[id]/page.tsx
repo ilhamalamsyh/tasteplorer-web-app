@@ -176,6 +176,7 @@ export default function UserDetailPage({ params }: UserDetailPageProps) {
 
   return (
     <ProfileView
+      userId={userIdInt || 0}
       username={username}
       fullname={fullname}
       image={image}

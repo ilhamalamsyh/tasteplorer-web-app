@@ -197,6 +197,7 @@ export default function ProfileContent() {
 
   return (
     <ProfileView
+      userId={parseInt(userData.currentUser.id)}
       username={username}
       fullname={fullname}
       image={image}

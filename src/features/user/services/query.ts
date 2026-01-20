@@ -155,3 +155,41 @@ export const USER_SUGGESTION_LIST_QUERY = gql`
     }
   }
 `;
+
+export const FOLLOWERS_QUERY = gql`
+  query Followers($userId: Int!, $cursor: Int, $limit: Int) {
+    followers(userId: $userId, cursor: $cursor, limit: $limit) {
+      users {
+        id
+        username
+        fullname
+        image
+        isMe
+        isFollowedByMe
+      }
+      pageInfo {
+        nextCursor
+        hasNext
+      }
+    }
+  }
+`;
+
+export const FOLLOWING_QUERY = gql`
+  query Following($userId: Int!, $cursor: Int, $limit: Int) {
+    following(userId: $userId, cursor: $cursor, limit: $limit) {
+      users {
+        id
+        username
+        fullname
+        image
+        isMe
+        isFollowedByMe
+      }
+      pageInfo {
+        nextCursor
+        hasNext
+      }
+    }
+  }
+`;
