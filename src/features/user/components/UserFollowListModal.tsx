@@ -146,17 +146,17 @@ const UserFollowListModal: React.FC<UserFollowListModalProps> = ({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
-      {/* Container dengan padding horizontal minimal */}
-      <div className="w-full max-w-sm mx-auto px-2 sm:px-3">
-        {/* Header - dengan padding top yang cukup untuk close button */}
-        <div className="sticky top-0 bg-white z-10 pt-16 sm:pt-4 pb-4 mb-2 border-b border-gray-200">
+      {/* Container dengan width lebih kecil untuk desktop */}
+      <div className="w-full max-w-[420px] mx-auto">
+        {/* Header - dengan padding untuk close button di desktop */}
+        <div className="sticky top-0 bg-white z-10 pt-16 sm:pt-12 pb-4 mb-2 border-b border-gray-200 px-4 sm:px-5">
           <h2 className="text-xl font-bold text-gray-900">
             {type === 'followers' ? 'Followers' : 'Following'}
           </h2>
         </div>
 
         {/* User List - Scrollable */}
-        <div className="max-h-[500px] overflow-y-auto scrollbar-hide -mx-2 sm:-mx-3 px-2 sm:px-3">
+        <div className="max-h-[500px] overflow-y-auto scrollbar-hide px-4 sm:px-5">
           {loading && users.length === 0 ? (
             <div className="flex justify-center py-12">
               <div className="w-8 h-8 rounded-full border-4 border-gray-300 border-t-primary animate-spin" />
