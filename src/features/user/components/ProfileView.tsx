@@ -10,6 +10,7 @@ import Snackbar from '@/core/components/snackbar/Snackbar';
 import { UserSuggestionCard } from './UserSuggestionCard';
 import { ProfileTabs } from './ProfileTabs';
 import { UserPostsList } from './UserPostsList';
+import UserFollowListModal from './UserFollowListModal';
 
 // TypeScript interfaces
 interface RecipeImage {
@@ -80,6 +81,7 @@ interface Feed {
 
 interface ProfileViewProps {
   // User data
+  userId: number; // Add userId prop
   username: string;
   fullname: string;
   image?: string;
@@ -134,6 +136,7 @@ interface ProfileViewProps {
 }
 
 export const ProfileView: React.FC<ProfileViewProps> = ({
+  userId,
   username,
   fullname,
   image,
@@ -161,6 +164,15 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
   const [isFetchingMore, setIsFetchingMore] = useState(false);
+  const [showFollowModal, setShowFollowModal] = useState<{
+    isOpen: boolean;
+    type: 'followers' | 'following';
+    userId: number | null;
+  }>({
+    isOpen: false,
+    type: 'followers',
+    userId: null,
+  });
   const {
     error: snackbarError,
     showError,
@@ -237,6 +249,30 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
     setSearchQuery(e.target.value);
   };
 
+  const handleFollowersClick = () => {
+    setShowFollowModal({
+      isOpen: true,
+      type: 'followers',
+      userId,
+    });
+  };
+
+  const handleFollowingClick = () => {
+    setShowFollowModal({
+      isOpen: true,
+      type: 'following',
+      userId,
+    });
+  };
+
+  const handleCloseFollowModal = () => {
+    setShowFollowModal({
+      isOpen: false,
+      type: 'followers',
+      userId: null,
+    });
+  };
+
   // Get button styling based on variant
   const getButtonStyle = () => {
     if (!actionButton) return '';
@@ -271,14 +307,20 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               <p className="font-semibold">{stats.posts}</p>
               <p className="text-gray-500 text-sm">Posts</p>
             </div>
-            <div className="text-center">
+            <button
+              onClick={handleFollowingClick}
+              className="text-center hover:opacity-80 transition-opacity"
+            >
               <p className="font-semibold">{stats.following}</p>
               <p className="text-gray-500 text-sm">Following</p>
-            </div>
-            <div className="text-center">
+            </button>
+            <button
+              onClick={handleFollowersClick}
+              className="text-center hover:opacity-80 transition-opacity"
+            >
               <p className="font-semibold">{stats.followers}</p>
               <p className="text-gray-500 text-sm">Followers</p>
-            </div>
+            </button>
           </div>
 
           {/* Action Button */}
@@ -453,6 +495,16 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         message={snackbarError}
         onClose={handleCloseSnackbar}
       />
+
+      {/* Follow List Modal */}
+      {showFollowModal.userId && (
+        <UserFollowListModal
+          isOpen={showFollowModal.isOpen}
+          onClose={handleCloseFollowModal}
+          userId={showFollowModal.userId}
+          type={showFollowModal.type}
+        />
+      )}
     </div>
   );
 };
