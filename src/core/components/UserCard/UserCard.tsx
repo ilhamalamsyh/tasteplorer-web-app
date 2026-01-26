@@ -10,6 +10,7 @@ export interface UserCardProps {
   };
   variant?: 'grid' | 'list';
   isFollowing?: boolean;
+  isLoading?: boolean;
   onFollowToggle?: (userId: string, e: React.MouseEvent) => void;
   onClick?: (userId: string) => void;
 }
@@ -18,6 +19,7 @@ const UserCard: React.FC<UserCardProps> = ({
   user,
   variant = 'grid',
   isFollowing = false,
+  isLoading = false,
   onFollowToggle,
   onClick,
 }) => {
@@ -29,6 +31,7 @@ const UserCard: React.FC<UserCardProps> = ({
 
   const handleFollowClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (isLoading) return;
     if (onFollowToggle) {
       onFollowToggle(user.id, e);
     }
@@ -101,13 +104,16 @@ const UserCard: React.FC<UserCardProps> = ({
           <div className="flex-shrink-0">
             <button
               onClick={handleFollowClick}
+              disabled={isLoading}
               className={`px-4 py-2 rounded-full font-semibold text-sm transition-colors ${
-                isFollowing
+                isLoading
+                  ? 'opacity-60 cursor-not-allowed'
+                  : isFollowing
                   ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                   : 'bg-primary text-white hover:bg-orange-600'
               }`}
             >
-              {isFollowing ? 'Following' : 'Follow'}
+              {isLoading ? '...' : isFollowing ? 'Following' : 'Follow'}
             </button>
           </div>
         )}

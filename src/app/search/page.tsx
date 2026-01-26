@@ -15,6 +15,7 @@ import RecipeGrid from '@/core/components/search-results/RecipeGrid';
 import UserCard from '@/core/components/UserCard/UserCard';
 import { RECIPE_LIST_QUERY } from '@/features/recipe/services/query';
 import { USERS_QUERY } from '@/features/user/services/query';
+import useFollowUser from '@/features/user/hooks/useFollowUser';
 
 // TypeScript interfaces for GraphQL response
 interface RecipeAuthor {
@@ -111,6 +112,11 @@ const SearchResultsPage: React.FC = () => {
   const searchQuery = searchParams?.get('search_query') || '';
   const router = useRouter();
   const [followingUsers, setFollowingUsers] = useState<Set<string>>(new Set());
+  const [followingLoadingIds, setFollowingLoadingIds] = useState<Set<string>>(
+    new Set()
+  );
+
+  const { toggleFollow } = useFollowUser();
 
   // Fetch recipes from API
   const { data, loading, error } = useQuery<RecipeListData>(RECIPE_LIST_QUERY, {
@@ -194,16 +200,35 @@ const SearchResultsPage: React.FC = () => {
 
   const handleFollowToggle = (userId: string, e: React.MouseEvent) => {
     e.stopPropagation();
+    const isFollowing = followingUsers.has(userId);
+
+    // optimistic update
     setFollowingUsers((prev) => {
       const newSet = new Set(prev);
-      if (newSet.has(userId)) {
-        newSet.delete(userId);
-      } else {
-        newSet.add(userId);
-      }
+      if (newSet.has(userId)) newSet.delete(userId);
+      else newSet.add(userId);
       return newSet;
     });
-    // TODO: Implement API call to follow/unfollow user
+
+    // mark loading
+    setFollowingLoadingIds((prev) => new Set(prev).add(userId));
+
+    toggleFollow(userId, isFollowing, {
+      onErrorRevert: () => {
+        setFollowingUsers((prev) => {
+          const newSet = new Set(prev);
+          if (isFollowing) newSet.add(userId);
+          else newSet.delete(userId);
+          return newSet;
+        });
+      },
+    }).finally(() => {
+      setFollowingLoadingIds((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(userId);
+        return newSet;
+      });
+    });
   };
 
   return (
@@ -345,6 +370,7 @@ const SearchResultsPage: React.FC = () => {
                     user={user}
                     variant="list"
                     isFollowing={followingUsers.has(user.id)}
+                    isLoading={followingLoadingIds.has(user.id)}
                     onFollowToggle={handleFollowToggle}
                     onClick={handleUserClick}
                   />

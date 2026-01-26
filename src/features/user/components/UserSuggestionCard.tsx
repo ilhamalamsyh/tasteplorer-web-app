@@ -1,5 +1,4 @@
 import React from 'react';
-import Image from 'next/image';
 
 interface UserSuggestion {
   userId: string;
@@ -13,6 +12,7 @@ interface UserSuggestion {
 interface UserSuggestionCardProps {
   user: UserSuggestion;
   isFollowing?: boolean;
+  isLoading?: boolean;
   onFollowToggle: (userId: string) => void;
   onUserClick: (userId: string) => void;
 }
@@ -20,11 +20,13 @@ interface UserSuggestionCardProps {
 export const UserSuggestionCard: React.FC<UserSuggestionCardProps> = ({
   user,
   isFollowing = false,
+  isLoading = false,
   onFollowToggle,
   onUserClick,
 }) => {
   const handleFollowClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (isLoading) return;
     onFollowToggle(user.userId);
   };
 
@@ -57,13 +59,16 @@ export const UserSuggestionCard: React.FC<UserSuggestionCardProps> = ({
       {/* Follow Button */}
       <button
         onClick={handleFollowClick}
+        disabled={isLoading}
         className={`w-full py-2 rounded-full text-sm font-semibold transition-colors ${
-          isFollowing
+          isLoading
+            ? 'opacity-60 cursor-not-allowed'
+            : isFollowing
             ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
             : 'bg-primary text-white hover:bg-orange-600'
         }`}
       >
-        {isFollowing ? 'Following' : 'Follow'}
+        {isLoading ? '...' : isFollowing ? 'Following' : 'Follow'}
       </button>
     </div>
   );

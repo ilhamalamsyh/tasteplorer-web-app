@@ -120,6 +120,7 @@ interface ProfileViewProps {
     onFollowToggle: (userId: string) => void;
     onUserClick: (userId: string) => void;
     followingUserIds?: Set<string>;
+    followingLoadingIds?: Set<string>;
   };
 
   // Optional
@@ -358,6 +359,9 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                         <UserSuggestionCard
                           user={user}
                           isFollowing={userSuggestions.followingUserIds?.has(
+                            user.userId
+                          )}
+                          isLoading={userSuggestions.followingLoadingIds?.has(
                             user.userId
                           )}
                           onFollowToggle={userSuggestions.onFollowToggle}
