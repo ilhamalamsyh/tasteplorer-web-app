@@ -5,6 +5,7 @@ import { useQuery } from '@apollo/client';
 import Image from 'next/image';
 import UserCard from '@/core/components/UserCard/UserCard';
 import { USERS_QUERY } from '@/features/user/services/query';
+import useFollowUser from '@/features/user/hooks/useFollowUser';
 
 // TypeScript interfaces
 interface User {
@@ -33,6 +34,11 @@ const UsersPage: React.FC = () => {
   const loaderRef = useRef<HTMLDivElement | null>(null);
   const [isFetchingMore, setIsFetchingMore] = useState(false);
   const [followingUsers, setFollowingUsers] = useState<Set<string>>(new Set());
+  const [followingLoadingIds, setFollowingLoadingIds] = useState<Set<string>>(
+    new Set()
+  );
+
+  const { toggleFollow } = useFollowUser();
 
   const { data, loading, fetchMore } = useQuery<UsersData>(USERS_QUERY, {
     variables: {
@@ -98,7 +104,27 @@ const UsersPage: React.FC = () => {
       }
       return newSet;
     });
-    // TODO: Implement API call to follow/unfollow user
+    const isFollowing = followingUsers.has(userId);
+
+    // optimistic update already applied above
+    setFollowingLoadingIds((prev) => new Set(prev).add(userId));
+
+    toggleFollow(userId, isFollowing, {
+      onErrorRevert: () => {
+        setFollowingUsers((prev) => {
+          const newSet = new Set(prev);
+          if (isFollowing) newSet.add(userId);
+          else newSet.delete(userId);
+          return newSet;
+        });
+      },
+    }).finally(() => {
+      setFollowingLoadingIds((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(userId);
+        return newSet;
+      });
+    });
   };
 
   const handleUserClick = (userId: string) => {
@@ -156,6 +182,7 @@ const UsersPage: React.FC = () => {
                   user={user}
                   variant="list"
                   isFollowing={followingUsers.has(user.id)}
+                  isLoading={followingLoadingIds.has(user.id)}
                   onFollowToggle={handleFollowToggle}
                   onClick={handleUserClick}
                 />

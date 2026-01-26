@@ -9,6 +9,8 @@ import { USER_RECIPE_LIST_QUERY } from '@/features/recipe/services/query';
 import { USER_FEEDS_QUERY } from '@/features/feed/services/query';
 import { ProfileView } from '@/features/user/components/ProfileView';
 import useSnackbar from '@/core/hooks/useSnackbar';
+import { CURRENT_USER } from '@/features/user/services/query';
+import useFollowUser from '@/features/user/hooks/useFollowUser';
 
 interface UserDetailPageProps {
   params: Promise<{ id: string }>;
@@ -21,6 +23,15 @@ export default function UserDetailPage({ params }: UserDetailPageProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'posts' | 'recipes'>('recipes');
   const { showError } = useSnackbar();
+
+  const { toggleFollow } = useFollowUser();
+  const { data: currentUserData } = useQuery(CURRENT_USER, {
+    fetchPolicy: 'cache-first',
+  });
+  const currentUserId = currentUserData?.currentUser?.id || null;
+
+  const [isFollowing, setIsFollowing] = useState<boolean>(false);
+  const [isFollowLoading, setIsFollowLoading] = useState<boolean>(false);
 
   // Resolve params
   useEffect(() => {
@@ -40,6 +51,20 @@ export default function UserDetailPage({ params }: UserDetailPageProps) {
     skip: !userId,
     fetchPolicy: 'network-only',
   });
+
+  // derive initial follow state once profile and current user are available
+  useEffect(() => {
+    if (!userData?.userProfile || !currentUserId) return;
+    try {
+      const followers = userData.userProfile.followers?.data || [];
+      const found = followers.find(
+        (f: { id?: string | number | null }) => `${f.id}` === `${currentUserId}`
+      );
+      setIsFollowing(!!found);
+    } catch {
+      // ignore
+    }
+  }, [userData, currentUserId]);
 
   // Fetch user's recipes
   const {
@@ -166,8 +191,21 @@ export default function UserDetailPage({ params }: UserDetailPageProps) {
   };
 
   const handleFollowClick = () => {
-    // TODO: Implement follow functionality
-    console.log('Follow user:', userId);
+    if (!userIdInt) return;
+
+    const prev = isFollowing;
+
+    // optimistic UI
+    setIsFollowing(!prev);
+    setIsFollowLoading(true);
+
+    toggleFollow(userIdInt, prev, {
+      onErrorRevert: () => {
+        setIsFollowing(prev);
+      },
+    }).finally(() => {
+      setIsFollowLoading(false);
+    });
   };
 
   const handleTabChange = (tab: 'posts' | 'recipes') => {
@@ -192,9 +230,15 @@ export default function UserDetailPage({ params }: UserDetailPageProps) {
       onFetchMore={handleFetchMoreRecipes}
       onSearchChange={handleSearchChange}
       actionButton={{
-        label: 'Follow',
+        label: isFollowLoading
+          ? isFollowing
+            ? '...'
+            : '...'
+          : isFollowing
+          ? 'Following'
+          : 'Follow',
         onClick: handleFollowClick,
-        variant: 'follow',
+        variant: isFollowing ? 'following' : 'follow',
       }}
       isOwnProfile={false}
       emptyStateMessage="No recipes yet."

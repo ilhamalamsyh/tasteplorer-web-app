@@ -6,6 +6,7 @@ import { FOLLOWERS_QUERY, FOLLOWING_QUERY } from '../services/query';
 import Modal from '@/core/components/modal/Modal';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import useFollowUser from '@/features/user/hooks/useFollowUser';
 
 interface User {
   id: number;
@@ -45,6 +46,9 @@ const UserFollowListModal: React.FC<UserFollowListModalProps> = ({
   const [followingStates, setFollowingStates] = useState<{
     [key: number]: boolean;
   }>({});
+  const [loadingIds, setLoadingIds] = useState<{ [key: number]: boolean }>({});
+
+  const { toggleFollow } = useFollowUser();
 
   // Determine which query to use
   const query = type === 'followers' ? FOLLOWERS_QUERY : FOLLOWING_QUERY;
@@ -73,15 +77,26 @@ const UserFollowListModal: React.FC<UserFollowListModalProps> = ({
     },
   });
 
-  // TODO: Implement follow/unfollow mutation
   const handleFollowToggle = async (targetUserId: number) => {
+    const prev = !!followingStates[targetUserId];
+
     // Optimistic update
-    setFollowingStates((prev) => ({
-      ...prev,
-      [targetUserId]: !prev[targetUserId],
+    setFollowingStates((prevStates) => ({
+      ...prevStates,
+      [targetUserId]: !prev,
     }));
 
-    // TODO: Call your follow/unfollow mutation here
+    // mark loading for this item
+    setLoadingIds((s) => ({ ...s, [targetUserId]: true }));
+
+    toggleFollow(targetUserId, prev, {
+      onErrorRevert: () => {
+        // revert optimistic state on error
+        setFollowingStates((ps) => ({ ...ps, [targetUserId]: prev }));
+      },
+    }).finally(() => {
+      setLoadingIds((s) => ({ ...s, [targetUserId]: false }));
+    });
   };
 
   // Infinite scroll
@@ -211,10 +226,15 @@ const UserFollowListModal: React.FC<UserFollowListModalProps> = ({
                   {!user.isMe && (
                     <button
                       onClick={() => handleFollowToggle(user.id)}
+                      disabled={!!loadingIds[user.id]}
                       className={`px-6 py-2 rounded-full font-semibold text-sm transition-all flex-shrink-0 ml-3 ${
                         followingStates[user.id]
                           ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                           : 'bg-primary text-white hover:bg-orange-600'
+                      } ${
+                        loadingIds[user.id]
+                          ? 'opacity-60 cursor-not-allowed'
+                          : ''
                       }`}
                     >
                       {followingStates[user.id] ? 'Following' : 'Follow'}

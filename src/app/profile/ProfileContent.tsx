@@ -12,6 +12,7 @@ import { USER_FEEDS_QUERY } from '@/features/feed/services/query';
 import { client } from '@/lib/apollo-client';
 import { ProfileView } from '@/features/user/components/ProfileView';
 import useSnackbar from '@/core/hooks/useSnackbar';
+import useFollowUser from '@/features/user/hooks/useFollowUser';
 
 export default function ProfileContent() {
   const router = useRouter();
@@ -20,9 +21,14 @@ export default function ProfileContent() {
   const [followingUserIds, setFollowingUserIds] = React.useState<Set<string>>(
     new Set()
   );
+  const [followingLoadingIds, setFollowingLoadingIds] = React.useState<
+    Set<string>
+  >(new Set());
   const [activeTab, setActiveTab] = React.useState<'posts' | 'recipes'>(
     'posts'
   );
+
+  const { toggleFollow } = useFollowUser();
 
   // Fetch current user
   const {
@@ -175,16 +181,40 @@ export default function ProfileContent() {
   };
 
   const handleFollowToggle = (userId: string) => {
+    const isFollowing = followingUserIds.has(userId);
+
+    // optimistic update
     setFollowingUserIds((prev) => {
       const newSet = new Set(prev);
-      if (newSet.has(userId)) {
-        newSet.delete(userId);
-      } else {
-        newSet.add(userId);
-      }
+      if (newSet.has(userId)) newSet.delete(userId);
+      else newSet.add(userId);
       return newSet;
     });
-    // TODO: Implement API call to follow/unfollow user
+
+    // mark loading
+    setFollowingLoadingIds((prev) => new Set(prev).add(userId));
+
+    toggleFollow(userId, isFollowing, {
+      onErrorRevert: () => {
+        // revert optimistic update on error
+        setFollowingUserIds((prev) => {
+          const newSet = new Set(prev);
+          if (isFollowing) {
+            // was following, revert to followed
+            newSet.add(userId);
+          } else {
+            newSet.delete(userId);
+          }
+          return newSet;
+        });
+      },
+    }).finally(() => {
+      setFollowingLoadingIds((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(userId);
+        return newSet;
+      });
+    });
   };
 
   const handleUserClick = (userId: string) => {
@@ -223,6 +253,7 @@ export default function ProfileContent() {
         onFollowToggle: handleFollowToggle,
         onUserClick: handleUserClick,
         followingUserIds: followingUserIds,
+        followingLoadingIds: followingLoadingIds,
       }}
       feeds={feeds}
       feedsLoading={feedsLoading}

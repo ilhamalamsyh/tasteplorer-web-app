@@ -14,3 +14,15 @@ export const UPDATE_USER = gql`
     }
   }
 `;
+
+export const FOLLOW_USER = gql`
+  mutation FollowUser($followerId: Int!, $followingId: Int!) {
+    followUser(followerId: $followerId, followingId: $followingId)
+  }
+`;
+
+export const UNFOLLOW_USER = gql`
+  mutation UnfollowUser($followerId: Int!, $followingId: Int!) {
+    unfollowUser(followerId: $followerId, followingId: $followingId)
+  }
+`;
