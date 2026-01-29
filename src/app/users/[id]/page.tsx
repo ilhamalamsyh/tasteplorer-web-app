@@ -169,8 +169,15 @@ export default function UserDetailPage({ params }: UserDetailPageProps) {
     );
   }
 
-  const { username, fullname, image, totalFollowers, totalFollowing, isMe } =
-    userData.userProfile;
+  const {
+    username,
+    fullname,
+    image,
+    totalFollowers,
+    totalFollowing,
+    totalPosts,
+    isMe,
+  } = userData.userProfile;
   const recipes = recipesData?.userRecipeList?.recipes || [];
   const recipesMeta = recipesData?.userRecipeList?.meta || {
     total: 0,
@@ -255,7 +262,7 @@ export default function UserDetailPage({ params }: UserDetailPageProps) {
       fullname={fullname}
       image={image}
       stats={{
-        posts: feeds.length,
+        posts: totalPosts || feeds.length,
         following: totalFollowing || 0,
         followers: totalFollowers || 0,
       }}

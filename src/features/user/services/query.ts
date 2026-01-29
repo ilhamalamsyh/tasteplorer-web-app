@@ -11,6 +11,7 @@ export const CURRENT_USER = gql`
       image
       totalFollowers
       totalFollowing
+      totalPosts
     }
   }
 `;
@@ -86,6 +87,7 @@ export const USER_PROFILE_QUERY = gql`
       image
       totalFollowers
       totalFollowing
+      totalPosts
       isFollowedByMe
       isMe
     }
