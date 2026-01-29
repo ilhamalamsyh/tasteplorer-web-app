@@ -233,8 +233,8 @@ export default function ProfileContent() {
       image={image}
       stats={{
         posts: recipesMeta.total,
-        following: 0,
-        followers: 0,
+        following: userData.currentUser.totalFollowing || 0,
+        followers: userData.currentUser.totalFollowers || 0,
       }}
       recipes={recipes}
       recipesLoading={recipesLoading}

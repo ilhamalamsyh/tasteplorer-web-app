@@ -16,6 +16,7 @@ import UserCard from '@/core/components/UserCard/UserCard';
 import { RECIPE_LIST_QUERY } from '@/features/recipe/services/query';
 import { USERS_QUERY } from '@/features/user/services/query';
 import useFollowUser from '@/features/user/hooks/useFollowUser';
+import { useAuth } from '@/context/AuthContext';
 
 // TypeScript interfaces for GraphQL response
 interface RecipeAuthor {
@@ -76,6 +77,8 @@ interface User {
   image?: string;
   createdAt: string;
   updatedAt: string;
+  isMe?: boolean;
+  isFollowedByMe?: boolean;
 }
 
 interface UsersData {
@@ -111,12 +114,15 @@ const SearchResultsPage: React.FC = () => {
   const searchParams = useSearchParams();
   const searchQuery = searchParams?.get('search_query') || '';
   const router = useRouter();
-  const [followingUsers, setFollowingUsers] = useState<Set<string>>(new Set());
+  // Map to track optimistic follow state overrides: userId -> isFollowing
+  const [followingOverrides, setFollowingOverrides] = useState<
+    Record<string, boolean>
+  >({});
   const [followingLoadingIds, setFollowingLoadingIds] = useState<Set<string>>(
     new Set()
   );
-
   const { toggleFollow } = useFollowUser();
+  const { user: authUser } = useAuth();
 
   // Fetch recipes from API
   const { data, loading, error } = useQuery<RecipeListData>(RECIPE_LIST_QUERY, {
@@ -198,28 +204,37 @@ const SearchResultsPage: React.FC = () => {
     router.push(`/users/${userId}`);
   };
 
-  const handleFollowToggle = (userId: string, e: React.MouseEvent) => {
+  const handleFollowToggle = (
+    userId: string,
+    apiIsFollowing: boolean,
+    e: React.MouseEvent
+  ) => {
     e.stopPropagation();
-    const isFollowing = followingUsers.has(userId);
 
-    // optimistic update
-    setFollowingUsers((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(userId)) newSet.delete(userId);
-      else newSet.add(userId);
-      return newSet;
-    });
+    // Determine previous/current state considering optimistic overrides
+    const prev = followingOverrides.hasOwnProperty(userId)
+      ? followingOverrides[userId]
+      : apiIsFollowing;
+
+    // Optimistic override: set to opposite
+    setFollowingOverrides((prevMap) => ({ ...prevMap, [userId]: !prev }));
 
     // mark loading
     setFollowingLoadingIds((prev) => new Set(prev).add(userId));
 
-    toggleFollow(userId, isFollowing, {
+    toggleFollow(userId, prev, {
       onErrorRevert: () => {
-        setFollowingUsers((prev) => {
-          const newSet = new Set(prev);
-          if (isFollowing) newSet.add(userId);
-          else newSet.delete(userId);
-          return newSet;
+        // revert optimistic override
+        setFollowingOverrides((prevMap) => {
+          const copy = { ...prevMap };
+          if (apiIsFollowing === prev) {
+            // no previous override before click, remove key
+            delete copy[userId];
+          } else {
+            // restore to previous explicit value
+            copy[userId] = prev;
+          }
+          return copy;
         });
       },
     }).finally(() => {
@@ -364,17 +379,40 @@ const SearchResultsPage: React.FC = () => {
           {!usersLoading && !usersError && users.length > 0 && (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {users.map((user) => (
-                  <UserCard
-                    key={user.id}
-                    user={user}
-                    variant="list"
-                    isFollowing={followingUsers.has(user.id)}
-                    isLoading={followingLoadingIds.has(user.id)}
-                    onFollowToggle={handleFollowToggle}
-                    onClick={handleUserClick}
-                  />
-                ))}
+                {users.map((user) => {
+                  // hide follow button for own profile
+                  const isMe = !!user.isMe;
+
+                  // determine current isFollowing: override if exists otherwise API value
+                  const currentIsFollowing = followingOverrides.hasOwnProperty(
+                    user.id
+                  )
+                    ? followingOverrides[user.id]
+                    : !!user.isFollowedByMe;
+
+                  const showFollowButton = !!authUser && !isMe;
+
+                  return (
+                    <UserCard
+                      key={user.id}
+                      user={user}
+                      variant="list"
+                      isFollowing={currentIsFollowing}
+                      isLoading={followingLoadingIds.has(user.id)}
+                      onFollowToggle={
+                        showFollowButton
+                          ? (id: string, e: React.MouseEvent) =>
+                              handleFollowToggle(
+                                user.id,
+                                !!user.isFollowedByMe,
+                                e
+                              )
+                          : undefined
+                      }
+                      onClick={handleUserClick}
+                    />
+                  );
+                })}
               </div>
               {/* See all button for mobile - shown below the grid */}
               {totalUsers > 0 && (
