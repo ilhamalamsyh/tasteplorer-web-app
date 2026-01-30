@@ -9,6 +9,9 @@ export const CURRENT_USER = gql`
       email
       birthDate
       image
+      totalFollowers
+      totalFollowing
+      totalPosts
     }
   }
 `;
@@ -22,6 +25,8 @@ export const USERS_QUERY = gql`
         fullname
         email
         image
+        isMe
+        isFollowedByMe
         createdAt
         updatedAt
       }
@@ -80,20 +85,11 @@ export const USER_PROFILE_QUERY = gql`
       email
       birthDate
       image
-      followers {
-        data {
-          id
-          username
-        }
-        total
-      }
-      following {
-        data {
-          id
-          username
-        }
-        total
-      }
+      totalFollowers
+      totalFollowing
+      totalPosts
+      isFollowedByMe
+      isMe
     }
   }
 `;

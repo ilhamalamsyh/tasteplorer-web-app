@@ -11,6 +11,10 @@ import { ProfileView } from '@/features/user/components/ProfileView';
 import useSnackbar from '@/core/hooks/useSnackbar';
 import { CURRENT_USER } from '@/features/user/services/query';
 import useFollowUser from '@/features/user/hooks/useFollowUser';
+import LoginModal from '@/features/auth/components/LoginModal';
+import { useAuth } from '@/context/AuthContext';
+import { useNavigation } from '@/context/NavigationContext';
+import { usePathname } from 'next/navigation';
 
 interface UserDetailPageProps {
   params: Promise<{ id: string }>;
@@ -23,12 +27,15 @@ export default function UserDetailPage({ params }: UserDetailPageProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<'posts' | 'recipes'>('recipes');
   const { showError } = useSnackbar();
+  const { user: authUser, loading: authLoading } = useAuth();
+  const { previousPath } = useNavigation();
+  const pathname = usePathname();
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   const { toggleFollow } = useFollowUser();
-  const { data: currentUserData } = useQuery(CURRENT_USER, {
+  useQuery(CURRENT_USER, {
     fetchPolicy: 'cache-first',
   });
-  const currentUserId = currentUserData?.currentUser?.id || null;
 
   const [isFollowing, setIsFollowing] = useState<boolean>(false);
   const [isFollowLoading, setIsFollowLoading] = useState<boolean>(false);
@@ -52,19 +59,13 @@ export default function UserDetailPage({ params }: UserDetailPageProps) {
     fetchPolicy: 'network-only',
   });
 
-  // derive initial follow state once profile and current user are available
+  // derive initial follow state once profile is available
   useEffect(() => {
-    if (!userData?.userProfile || !currentUserId) return;
-    try {
-      const followers = userData.userProfile.followers?.data || [];
-      const found = followers.find(
-        (f: { id?: string | number | null }) => `${f.id}` === `${currentUserId}`
-      );
-      setIsFollowing(!!found);
-    } catch {
-      // ignore
-    }
-  }, [userData, currentUserId]);
+    if (!userData?.userProfile) return;
+    // prefer API-provided flag rather than scanning lists
+    const apiIsFollowing = !!userData.userProfile.isFollowedByMe;
+    setIsFollowing(apiIsFollowing);
+  }, [userData]);
 
   // Fetch user's recipes
   const {
@@ -103,12 +104,46 @@ export default function UserDetailPage({ params }: UserDetailPageProps) {
   // Handle user profile error
   useEffect(() => {
     if (userError) {
+      const errorMessage = (userError.message || '').toLowerCase();
+
+      // If error looks like an auth/token issue, show login modal similar to ProtectedRoute
+      if (
+        !authLoading &&
+        !authUser &&
+        (errorMessage.includes('token') ||
+          errorMessage.includes('unauthorized') ||
+          errorMessage.includes('not authenticated') ||
+          errorMessage.includes('invalid'))
+      ) {
+        setShowLoginModal(true);
+        return;
+      }
+
       showError(userError.message || 'Failed to load user profile');
     }
-  }, [userError, showError]);
+  }, [userError, showError, authLoading, authUser]);
+
+  const handleCloseLoginModal = () => {
+    if (previousPath && previousPath !== pathname) {
+      router.push(previousPath);
+    } else {
+      router.push('/');
+    }
+    setShowLoginModal(false);
+  };
 
   if (userLoading || !userId) return <p>Loading...</p>;
-  if (userError || !userData?.userProfile)
+  if (userError || !userData?.userProfile) {
+    if (showLoginModal) {
+      return (
+        <LoginModal
+          isOpen={true}
+          onClose={handleCloseLoginModal}
+          isMobileFullScreen={true}
+        />
+      );
+    }
+
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
         <Image
@@ -132,9 +167,17 @@ export default function UserDetailPage({ params }: UserDetailPageProps) {
         </button>
       </div>
     );
+  }
 
-  const { username, fullname, image, followers, following } =
-    userData.userProfile;
+  const {
+    username,
+    fullname,
+    image,
+    totalFollowers,
+    totalFollowing,
+    totalPosts,
+    isMe,
+  } = userData.userProfile;
   const recipes = recipesData?.userRecipeList?.recipes || [];
   const recipesMeta = recipesData?.userRecipeList?.meta || {
     total: 0,
@@ -219,9 +262,9 @@ export default function UserDetailPage({ params }: UserDetailPageProps) {
       fullname={fullname}
       image={image}
       stats={{
-        posts: feeds.length,
-        following: following.total,
-        followers: followers.total,
+        posts: totalPosts || feeds.length,
+        following: totalFollowing || 0,
+        followers: totalFollowers || 0,
       }}
       recipes={recipes}
       recipesLoading={recipesLoading}
@@ -229,17 +272,19 @@ export default function UserDetailPage({ params }: UserDetailPageProps) {
       recipesMeta={recipesMeta}
       onFetchMore={handleFetchMoreRecipes}
       onSearchChange={handleSearchChange}
-      actionButton={{
-        label: isFollowLoading
-          ? isFollowing
-            ? '...'
-            : '...'
-          : isFollowing
-          ? 'Following'
-          : 'Follow',
-        onClick: handleFollowClick,
-        variant: isFollowing ? 'following' : 'follow',
-      }}
+      actionButton={
+        isMe
+          ? undefined
+          : {
+              label: isFollowLoading
+                ? '...'
+                : isFollowing
+                ? 'Following'
+                : 'Follow',
+              onClick: handleFollowClick,
+              variant: isFollowing ? 'following' : 'follow',
+            }
+      }
       isOwnProfile={false}
       emptyStateMessage="No recipes yet."
       feeds={feeds}

@@ -133,6 +133,9 @@ export default function ProfileContent() {
   const feedsHasMore = feedsData?.userFeeds?.hasMore || false;
   const suggestions = suggestionsData?.userSuggestionList?.users || [];
 
+  // Prefer server-provided totalPosts but fall back to recipesMeta.total
+  const postsCount = userData.currentUser.totalPosts || recipesMeta.total;
+
   const handleFetchMoreRecipes = (cursor: string) => {
     fetchMoreRecipes({
       variables: { after: cursor },
@@ -232,9 +235,9 @@ export default function ProfileContent() {
       fullname={fullname}
       image={image}
       stats={{
-        posts: recipesMeta.total,
-        following: 0,
-        followers: 0,
+        posts: postsCount,
+        following: userData.currentUser.totalFollowing || 0,
+        followers: userData.currentUser.totalFollowers || 0,
       }}
       recipes={recipes}
       recipesLoading={recipesLoading}
