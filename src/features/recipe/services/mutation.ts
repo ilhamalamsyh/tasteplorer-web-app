@@ -77,3 +77,13 @@ export const UPDATE_RECIPE_MUTATION = gql`
     }
   }
 `;
+
+export const TOGGLE_LIKE_RECIPE = gql`
+  mutation ToggleLikeRecipe($input: ToggleLikeRecipeInput!) {
+    toggleLikeRecipe(input: $input) {
+      success
+      message
+      isLiked
+    }
+  }
+`;
