@@ -38,6 +38,7 @@ export interface Recipe {
   instructions: Instruction[];
   notes: RecipeNote[];
   relatedRecipes: RelatedRecipe[];
+  isLiked?: boolean;
 }
 
 interface RecipeDetailPageProps {
@@ -113,6 +114,7 @@ const RecipeDetailPage: React.FC<RecipeDetailPageProps> = ({
           authorAvatar={recipe.author.avatar}
           recipeId={recipe.id}
           authorId={recipe.author.id}
+          isLiked={recipe.isLiked}
           currentUserId={currentUserId}
           onEditClick={handleEditRecipe}
         />

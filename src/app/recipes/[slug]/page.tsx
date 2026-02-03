@@ -95,6 +95,7 @@ export default function RecipeDetailPage({ params }: RecipeDetailPageProps) {
       stepNumber: idx + 1,
       description: ins.instruction,
     })),
+    isLiked: !!api.isLiked,
     notes: [], // dummy
     relatedRecipes: [], // dummy
   };
