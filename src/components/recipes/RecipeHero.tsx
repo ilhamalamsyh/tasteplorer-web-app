@@ -2,11 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Avatar } from '@/core/components/image/Avatar';
-import { useMutation } from '@apollo/client';
-import { TOGGLE_LIKE_RECIPE } from '@/features/recipe/services/mutation';
-import { useAuth } from '@/context/AuthContext';
-import LoginModal from '@/features/auth/components/LoginModal';
-import useSnackbar from '@/core/hooks/useSnackbar';
+import LikeButton from '@/core/components/LikeButton/LikeButton';
 
 interface RecipeHeroProps {
   title: string;
@@ -47,12 +43,6 @@ const RecipeHero: React.FC<RecipeHeroProps> = ({
 }) => {
   const [isMobile, setIsMobile] = useState(false);
   const [showFullSubtitle, setShowFullSubtitle] = useState(false);
-  const { user: authUser } = useAuth();
-  const { showError } = useSnackbar();
-  const [liked, setLiked] = useState<boolean>(!!isLiked);
-  const [isLiking, setIsLiking] = useState<boolean>(false);
-  const [showLoginModal, setShowLoginModal] = useState(false);
-  const [toggleLikeRecipe] = useMutation(TOGGLE_LIKE_RECIPE);
   const isSubtitleLong = subtitle && subtitle.split(' ').length > 20; // simple check, adjust as needed
 
   // Helper to clamp subtitle to N chars and add '... More' if needed
@@ -71,50 +61,6 @@ const RecipeHero: React.FC<RecipeHeroProps> = ({
 
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
-
-  // sync prop updates
-  useEffect(() => {
-    setLiked(!!isLiked);
-  }, [isLiked]);
-
-  const handleCloseLoginModal = () => setShowLoginModal(false);
-
-  const handleToggleLike = async () => {
-    // require auth
-    if (!authUser) {
-      setShowLoginModal(true);
-      return;
-    }
-
-    if (!recipeId) return;
-
-    const prev = liked;
-    // optimistic update
-    setLiked(!prev);
-    setIsLiking(true);
-
-    try {
-      const { data } = await toggleLikeRecipe({
-        variables: { input: { recipeId: recipeId } },
-      });
-
-      // ensure final state matches server
-      const serverIsLiked = data?.toggleLikeRecipe?.isLiked;
-      if (typeof serverIsLiked === 'boolean') {
-        setLiked(serverIsLiked);
-      }
-    } catch (err: unknown) {
-      // revert optimistic update
-      setLiked(prev);
-      const message =
-        err instanceof Error
-          ? err.message
-          : String(err ?? 'Failed to update like status');
-      showError(message || 'Failed to update like status');
-    } finally {
-      setIsLiking(false);
-    }
-  };
 
   const totalTime = `${parseInt(prepTime) + parseInt(cookTime)} mins`;
 
@@ -367,30 +313,7 @@ const RecipeHero: React.FC<RecipeHeroProps> = ({
 
           {/* Action Buttons */}
           <div className="flex gap-2 sm:gap-3 w-full justify-start">
-            <button
-              onClick={handleToggleLike}
-              disabled={isLiking}
-              aria-pressed={liked}
-              className={`p-2 sm:p-3 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-primary/50 ${
-                liked
-                  ? 'text-red-500 border-2 border-red-100 bg-red-50 dark:border-red-900/30'
-                  : 'border-2 border-gray-200 dark:border-gray-700 hover:border-primary hover:text-primary'
-              }`}
-            >
-              <svg
-                className="w-5 h-5 sm:w-6 sm:h-6"
-                viewBox="0 0 24 24"
-                fill={liked ? 'currentColor' : 'none'}
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                />
-              </svg>
-            </button>
+            <LikeButton id={String(recipeId)} initialIsLiked={!!isLiked} />
             <button className="p-2 sm:p-3 border-2 border-gray-200 dark:border-gray-700 rounded-lg hover:border-primary hover:text-primary transition-colors focus:outline-none focus:ring-2 focus:ring-primary/50">
               <svg
                 className="w-5 h-5 sm:w-6 sm:h-6"
@@ -407,12 +330,6 @@ const RecipeHero: React.FC<RecipeHeroProps> = ({
               </svg>
             </button>
           </div>
-          {showLoginModal && (
-            <LoginModal
-              isOpen={showLoginModal}
-              onClose={handleCloseLoginModal}
-            />
-          )}
         </div>
       </div>
     </section>

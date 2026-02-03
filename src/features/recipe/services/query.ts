@@ -25,6 +25,7 @@ export const RECIPE_DETAIL_QUERY = gql`
         id
         instruction
       }
+      isLiked
     }
   }
 `;
@@ -54,6 +55,7 @@ export const MY_RECIPE_DETAIL_QUERY = gql`
         id
         instruction
       }
+      isLiked
     }
   }
 `;
