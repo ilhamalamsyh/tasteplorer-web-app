@@ -1,6 +1,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
+import Lightbox from 'yet-another-react-lightbox';
+import 'yet-another-react-lightbox/styles.css';
 import { Avatar } from '@/core/components/image/Avatar';
 import LikeButton from '@/core/components/LikeButton/LikeButton';
 
@@ -43,6 +45,7 @@ const RecipeHero: React.FC<RecipeHeroProps> = ({
 }) => {
   const [isMobile, setIsMobile] = useState(false);
   const [showFullSubtitle, setShowFullSubtitle] = useState(false);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const isSubtitleLong = subtitle && subtitle.split(' ').length > 20; // simple check, adjust as needed
 
   // Helper to clamp subtitle to N chars and add '... More' if needed
@@ -99,6 +102,14 @@ const RecipeHero: React.FC<RecipeHeroProps> = ({
               style={{ zIndex: 2, pointerEvents: 'none' }}
             />
           )}
+
+          {/* Clickable overlay — opens lightbox */}
+          <button
+            type="button"
+            onClick={() => setIsLightboxOpen(true)}
+            className="absolute inset-0 z-[3] cursor-zoom-in rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:ring-inset"
+            aria-label="View full-size image"
+          />
         </div>
 
         {/* Content Section - Full width on mobile, 3/4 on desktop */}
@@ -332,6 +343,22 @@ const RecipeHero: React.FC<RecipeHeroProps> = ({
           </div>
         </div>
       </div>
+      {/* yet-another-react-lightbox — Escape, backdrop click, close button all built-in */}
+      <Lightbox
+        open={isLightboxOpen}
+        close={() => setIsLightboxOpen(false)}
+        slides={[{ src: imageUrl || '/images/broken-image.png', alt: title }]}
+        carousel={{ finite: true }}
+        styles={{
+          root: {
+            '--yarl__color_backdrop': 'rgba(0, 0, 0, 0.8)',
+          } as never,
+        }}
+        render={{
+          buttonPrev: () => null,
+          buttonNext: () => null,
+        }}
+      />
     </section>
   );
 };
