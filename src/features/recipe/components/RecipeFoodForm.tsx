@@ -8,13 +8,33 @@ import {
 } from '@/features/recipe/services/mutation';
 import { MY_RECIPE_DETAIL_QUERY } from '@/features/recipe/services/query';
 import Modal from '@/core/components/modal/Modal';
-import { HiOutlinePhoto, HiOutlineXMark, HiOutlinePlus } from 'react-icons/hi2';
+import {
+  HiOutlinePhoto,
+  HiOutlineXMark,
+  HiOutlinePlus,
+  HiOutlineBars3,
+} from 'react-icons/hi2';
 import useSnackbar from '@/core/hooks/useSnackbar';
 import Snackbar from '@/core/components/snackbar/Snackbar';
 import { useAuth } from '@/context/AuthContext';
 import { useImageUpload } from '@/core/hooks/useImageUpload';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  SortableContext,
+  arrayMove,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 interface RecipeIngredient {
   id: string;
@@ -34,6 +54,42 @@ interface RecipeFoodFormProps {
   mode?: 'create' | 'edit';
 }
 
+// ─── SortableItem ────────────────────────────────────────────────────────────
+type SortableItemChildProps = {
+  listeners: ReturnType<typeof useSortable>['listeners'];
+  attributes: ReturnType<typeof useSortable>['attributes'];
+  isDragging: boolean;
+};
+
+const SortableItem: React.FC<{
+  id: string;
+  children: (props: SortableItemChildProps) => React.ReactNode;
+}> = ({ id, children }) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id });
+
+  const style: React.CSSProperties = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+    position: 'relative',
+    zIndex: isDragging ? 1 : 'auto',
+  };
+
+  return (
+    <div ref={setNodeRef} style={style}>
+      {children({ listeners, attributes, isDragging })}
+    </div>
+  );
+};
+// ─────────────────────────────────────────────────────────────────────────────
+
 const RecipeFoodForm: React.FC<RecipeFoodFormProps> = ({
   isOpen,
   onClose,
@@ -48,8 +104,12 @@ const RecipeFoodForm: React.FC<RecipeFoodFormProps> = ({
   const [cookingTime, setCookingTime] = useState('');
   const [servings, setServings] = useState('');
   const [imageUrl, setImageUrl] = useState('');
-  const [ingredients, setIngredients] = useState<string[]>(['']);
-  const [instructions, setInstructions] = useState<string[]>(['']);
+  const [ingredients, setIngredients] = useState<
+    { id: string; value: string }[]
+  >(() => [{ id: crypto.randomUUID(), value: '' }]);
+  const [instructions, setInstructions] = useState<
+    { id: string; value: string }[]
+  >(() => [{ id: crypto.randomUUID(), value: '' }]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imageUploading, setImageUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -61,6 +121,10 @@ const RecipeFoodForm: React.FC<RecipeFoodFormProps> = ({
   } = useSnackbar();
 
   const { uploadImage } = useImageUpload('RECIPE');
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
+  );
 
   // Fetch recipe data for edit mode - use MY_RECIPE_DETAIL_QUERY for ownership validation
   const { data: recipeData, loading: recipeLoading } = useQuery(
@@ -115,14 +179,16 @@ const RecipeFoodForm: React.FC<RecipeFoodFormProps> = ({
       setServings(recipe.servings || '');
       setImageUrl(recipe.image?.url || '');
       setIngredients(
-        recipe.ingredients?.map((ing: RecipeIngredient) => ing.ingredient) || [
-          '',
-        ]
+        recipe.ingredients?.map((ing: RecipeIngredient) => ({
+          id: crypto.randomUUID(),
+          value: ing.ingredient,
+        })) || [{ id: crypto.randomUUID(), value: '' }]
       );
       setInstructions(
-        recipe.instructions?.map(
-          (ins: RecipeInstruction) => ins.instruction
-        ) || ['']
+        recipe.instructions?.map((ins: RecipeInstruction) => ({
+          id: crypto.randomUUID(),
+          value: ins.instruction,
+        })) || [{ id: crypto.randomUUID(), value: '' }]
       );
     }
   }, [recipeData, mode]);
@@ -133,8 +199,8 @@ const RecipeFoodForm: React.FC<RecipeFoodFormProps> = ({
     setCookingTime('');
     setServings('');
     setImageUrl('');
-    setIngredients(['']);
-    setInstructions(['']);
+    setIngredients([{ id: crypto.randomUUID(), value: '' }]);
+    setInstructions([{ id: crypto.randomUUID(), value: '' }]);
     setIsSubmitting(false);
     onClose();
   };
@@ -167,35 +233,49 @@ const RecipeFoodForm: React.FC<RecipeFoodFormProps> = ({
   };
 
   const handleAddIngredient = () => {
-    setIngredients([...ingredients, '']);
+    setIngredients([...ingredients, { id: crypto.randomUUID(), value: '' }]);
   };
 
-  const handleRemoveIngredient = (index: number) => {
+  const handleRemoveIngredient = (id: string) => {
     if (ingredients.length > 1) {
-      setIngredients(ingredients.filter((_, i) => i !== index));
+      setIngredients(ingredients.filter((i) => i.id !== id));
     }
   };
 
-  const handleIngredientChange = (index: number, value: string) => {
-    const newIngredients = [...ingredients];
-    newIngredients[index] = value;
-    setIngredients(newIngredients);
+  const handleIngredientChange = (id: string, value: string) => {
+    setIngredients(ingredients.map((i) => (i.id === id ? { ...i, value } : i)));
+  };
+
+  const handleReorderIngredients = (activeId: string, overId: string) => {
+    setIngredients((items) => {
+      const oldIndex = items.findIndex((i) => i.id === activeId);
+      const newIndex = items.findIndex((i) => i.id === overId);
+      return arrayMove(items, oldIndex, newIndex);
+    });
   };
 
   const handleAddInstruction = () => {
-    setInstructions([...instructions, '']);
+    setInstructions([...instructions, { id: crypto.randomUUID(), value: '' }]);
   };
 
-  const handleRemoveInstruction = (index: number) => {
+  const handleRemoveInstruction = (id: string) => {
     if (instructions.length > 1) {
-      setInstructions(instructions.filter((_, i) => i !== index));
+      setInstructions(instructions.filter((i) => i.id !== id));
     }
   };
 
-  const handleInstructionChange = (index: number, value: string) => {
-    const newInstructions = [...instructions];
-    newInstructions[index] = value;
-    setInstructions(newInstructions);
+  const handleInstructionChange = (id: string, value: string) => {
+    setInstructions(
+      instructions.map((i) => (i.id === id ? { ...i, value } : i))
+    );
+  };
+
+  const handleReorderInstructions = (activeId: string, overId: string) => {
+    setInstructions((items) => {
+      const oldIndex = items.findIndex((i) => i.id === activeId);
+      const newIndex = items.findIndex((i) => i.id === overId);
+      return arrayMove(items, oldIndex, newIndex);
+    });
   };
 
   const handleSubmit = async () => {
@@ -225,13 +305,17 @@ const RecipeFoodForm: React.FC<RecipeFoodFormProps> = ({
       return;
     }
 
-    const validIngredients = ingredients.filter((ing) => ing.trim() !== '');
+    const validIngredients = ingredients
+      .filter((i) => i.value.trim() !== '')
+      .map((i) => i.value.trim());
     if (validIngredients.length === 0) {
       showError('Please add at least one ingredient');
       return;
     }
 
-    const validInstructions = instructions.filter((ins) => ins.trim() !== '');
+    const validInstructions = instructions
+      .filter((i) => i.value.trim() !== '')
+      .map((i) => i.value.trim());
     if (validInstructions.length === 0) {
       showError('Please add at least one instruction');
       return;
@@ -276,8 +360,8 @@ const RecipeFoodForm: React.FC<RecipeFoodFormProps> = ({
     cookingTime.trim() &&
     servings.trim() &&
     imageUrl &&
-    ingredients.some((ing) => ing.trim()) &&
-    instructions.some((ins) => ins.trim()) &&
+    ingredients.some((i) => i.value.trim()) &&
+    instructions.some((i) => i.value.trim()) &&
     !isSubmitting &&
     !imageUploading;
 
@@ -485,33 +569,69 @@ const RecipeFoodForm: React.FC<RecipeFoodFormProps> = ({
                   Add
                 </button>
               </div>
-              <div className="space-y-2">
-                {ingredients.map((ingredient, index) => (
-                  <div key={index} className="flex gap-1.5 sm:gap-2">
-                    <div className="flex-shrink-0 w-6 sm:w-8 h-10 sm:h-11 flex items-center justify-center text-gray-500 font-medium text-xs sm:text-sm">
-                      {index + 1}.
-                    </div>
-                    <input
-                      type="text"
-                      value={ingredient}
-                      onChange={(e) =>
-                        handleIngredientChange(index, e.target.value)
-                      }
-                      placeholder="e.g., 3 cups cooked white rice"
-                      className="flex-1 min-w-0 px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900 text-xs sm:text-base"
-                    />
-                    {ingredients.length > 1 && (
-                      <button
-                        onClick={() => handleRemoveIngredient(index)}
-                        className="flex-shrink-0 p-2 sm:p-3 text-gray-400 hover:text-red-500 transition-colors"
-                        type="button"
-                      >
-                        <HiOutlineXMark className="w-4 h-4 sm:w-5 sm:h-5" />
-                      </button>
-                    )}
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={({ active, over }: DragEndEvent) => {
+                  if (over && active.id !== over.id) {
+                    handleReorderIngredients(
+                      String(active.id),
+                      String(over.id)
+                    );
+                  }
+                }}
+              >
+                <SortableContext
+                  items={ingredients.map((i) => i.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div className="space-y-2">
+                    {ingredients.map((ingredient, index) => (
+                      <SortableItem key={ingredient.id} id={ingredient.id}>
+                        {({ listeners, attributes }) => (
+                          <div className="flex gap-1.5 sm:gap-2">
+                            <button
+                              type="button"
+                              {...listeners}
+                              {...attributes}
+                              className="flex-shrink-0 p-1 flex items-center text-gray-300 hover:text-gray-500 cursor-grab active:cursor-grabbing touch-none"
+                              aria-label="Drag to reorder ingredient"
+                            >
+                              <HiOutlineBars3 className="w-4 h-4 sm:w-5 sm:h-5" />
+                            </button>
+                            <div className="flex-shrink-0 w-6 sm:w-8 h-10 sm:h-11 flex items-center justify-center text-gray-500 font-medium text-xs sm:text-sm">
+                              {index + 1}.
+                            </div>
+                            <input
+                              type="text"
+                              value={ingredient.value}
+                              onChange={(e) =>
+                                handleIngredientChange(
+                                  ingredient.id,
+                                  e.target.value
+                                )
+                              }
+                              placeholder="e.g., 3 cups cooked white rice"
+                              className="flex-1 min-w-0 px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900 text-xs sm:text-base"
+                            />
+                            {ingredients.length > 1 && (
+                              <button
+                                onClick={() =>
+                                  handleRemoveIngredient(ingredient.id)
+                                }
+                                className="flex-shrink-0 p-2 sm:p-3 text-gray-400 hover:text-red-500 transition-colors"
+                                type="button"
+                              >
+                                <HiOutlineXMark className="w-4 h-4 sm:w-5 sm:h-5" />
+                              </button>
+                            )}
+                          </div>
+                        )}
+                      </SortableItem>
+                    ))}
                   </div>
-                ))}
-              </div>
+                </SortableContext>
+              </DndContext>
             </div>
 
             {/* Instructions */}
@@ -529,35 +649,71 @@ const RecipeFoodForm: React.FC<RecipeFoodFormProps> = ({
                   Add Step
                 </button>
               </div>
-              <div className="space-y-3">
-                {instructions.map((instruction, index) => (
-                  <div key={index} className="flex gap-1.5 sm:gap-2">
-                    <div className="flex-shrink-0 w-6 sm:w-8 h-10 sm:h-11 flex items-center justify-center pt-1">
-                      <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-primary text-white flex items-center justify-center text-xs sm:text-sm font-semibold">
-                        {index + 1}
-                      </div>
-                    </div>
-                    <textarea
-                      value={instruction}
-                      onChange={(e) =>
-                        handleInstructionChange(index, e.target.value)
-                      }
-                      placeholder={`Step ${index + 1} instructions...`}
-                      className="flex-1 min-w-0 px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none text-gray-900 text-xs sm:text-base"
-                      rows={3}
-                    />
-                    {instructions.length > 1 && (
-                      <button
-                        onClick={() => handleRemoveInstruction(index)}
-                        className="flex-shrink-0 p-2 sm:p-3 text-gray-400 hover:text-red-500 transition-colors"
-                        type="button"
-                      >
-                        <HiOutlineXMark className="w-4 h-4 sm:w-5 sm:h-5" />
-                      </button>
-                    )}
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={({ active, over }: DragEndEvent) => {
+                  if (over && active.id !== over.id) {
+                    handleReorderInstructions(
+                      String(active.id),
+                      String(over.id)
+                    );
+                  }
+                }}
+              >
+                <SortableContext
+                  items={instructions.map((i) => i.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div className="space-y-3">
+                    {instructions.map((instruction, index) => (
+                      <SortableItem key={instruction.id} id={instruction.id}>
+                        {({ listeners, attributes }) => (
+                          <div className="flex gap-1.5 sm:gap-2">
+                            <button
+                              type="button"
+                              {...listeners}
+                              {...attributes}
+                              className="flex-shrink-0 p-1 flex items-center text-gray-300 hover:text-gray-500 cursor-grab active:cursor-grabbing touch-none"
+                              aria-label="Drag to reorder step"
+                            >
+                              <HiOutlineBars3 className="w-4 h-4 sm:w-5 sm:h-5" />
+                            </button>
+                            <div className="flex-shrink-0 w-6 sm:w-8 h-10 sm:h-11 flex items-center justify-center pt-1">
+                              <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-primary text-white flex items-center justify-center text-xs sm:text-sm font-semibold">
+                                {index + 1}
+                              </div>
+                            </div>
+                            <textarea
+                              value={instruction.value}
+                              onChange={(e) =>
+                                handleInstructionChange(
+                                  instruction.id,
+                                  e.target.value
+                                )
+                              }
+                              placeholder={`Step ${index + 1} instructions...`}
+                              className="flex-1 min-w-0 px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent resize-none text-gray-900 text-xs sm:text-base"
+                              rows={3}
+                            />
+                            {instructions.length > 1 && (
+                              <button
+                                onClick={() =>
+                                  handleRemoveInstruction(instruction.id)
+                                }
+                                className="flex-shrink-0 p-2 sm:p-3 text-gray-400 hover:text-red-500 transition-colors"
+                                type="button"
+                              >
+                                <HiOutlineXMark className="w-4 h-4 sm:w-5 sm:h-5" />
+                              </button>
+                            )}
+                          </div>
+                        )}
+                      </SortableItem>
+                    ))}
                   </div>
-                ))}
-              </div>
+                </SortableContext>
+              </DndContext>
             </div>
           </div>
 
