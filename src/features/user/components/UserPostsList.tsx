@@ -10,6 +10,7 @@ import FeedForm from '@/features/feed/components/FeedForm';
 import DeleteConfirmationModal from '@/features/feed/components/DeleteConfirmationModal';
 import useSnackbar from '@/core/hooks/useSnackbar';
 import Image from 'next/image';
+import FeedImageCarousel from '@/core/components/FeedImageCarousel/FeedImageCarousel';
 
 interface FeedImage {
   id: string;
@@ -279,15 +280,10 @@ export const UserPostsList: React.FC<UserPostsListProps> = ({
 
             {/* Images */}
             {feed.images && feed.images.length > 0 && (
-              <div className="relative w-full aspect-video bg-gray-100 overflow-hidden">
-                <Image
-                  src={feed.images[0].imageUrl}
-                  alt="Post"
-                  fill
-                  className="object-cover transition-transform duration-200 hover:scale-105"
-                  sizes="(max-width: 768px) 100vw, 672px"
-                />
-              </div>
+              <FeedImageCarousel
+                images={feed.images.map((img) => img.imageUrl)}
+                aspectRatio="aspect-video"
+              />
             )}
 
             {/* Actions placeholder */}

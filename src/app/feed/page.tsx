@@ -127,6 +127,7 @@ const FeedPage = () => {
       time: formatRelativeTime(feed.createdAt),
       text: feed.content,
       image: firstImage?.imageUrl || '',
+      images: sortedImages.map((img) => img.imageUrl),
       source: {
         title: feed.recipeId ? 'View Recipe' : 'Tasteplorer',
         url: feed.recipeId ? `/recipes/${feed.recipeId}` : '#',

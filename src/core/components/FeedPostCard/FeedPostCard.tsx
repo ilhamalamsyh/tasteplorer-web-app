@@ -7,6 +7,7 @@ import {
   FaEllipsisH,
 } from 'react-icons/fa';
 import Image from 'next/image';
+import FeedImageCarousel from '@/core/components/FeedImageCarousel/FeedImageCarousel';
 
 interface FeedPostCardProps {
   post: {
@@ -16,6 +17,7 @@ interface FeedPostCardProps {
     time: string;
     text: string;
     image: string;
+    images?: string[];
     source: { title: string; url: string; image: string };
     liked: boolean;
     bookmarked: boolean;
@@ -81,21 +83,16 @@ const FeedPostCard: React.FC<FeedPostCardProps> = ({ post, className }) => {
         </button>
       </div>
       {/* Image */}
-      <div className="relative w-full aspect-[4/3] bg-gray-100 overflow-hidden">
-        {post.image && post.image.trim() !== '' ? (
-          <Image
-            src={post.image}
-            alt="Post"
-            fill
-            className="object-cover transition-transform duration-200 hover:scale-105"
-            sizes="(max-width: 768px) 100vw, 672px"
-          />
-        ) : (
-          <div className="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400">
-            <span className="text-sm">No Image Available</span>
-          </div>
-        )}
-      </div>
+      <FeedImageCarousel
+        images={
+          post.images && post.images.length > 0
+            ? post.images
+            : post.image
+              ? [post.image]
+              : []
+        }
+        aspectRatio="aspect-[4/3]"
+      />
       {/* Text */}
       <div className="px-5 pt-3 pb-1">
         <p className="text-gray-800 text-base leading-relaxed whitespace-pre-line break-words">
